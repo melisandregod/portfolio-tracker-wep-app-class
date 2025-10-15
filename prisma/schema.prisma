@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" 
+  url      = env("DATABASE_URL")
+}
+
+enum AssetCategory {
+  STOCK
+  ETF
+  CRYPTO
+  GOLD
+}
+
+enum TransactionType {
+  BUY
+  SELL
+}
+
+model Asset {
+  id           Int           @id @default(autoincrement())
+  symbol       String        @unique
+  name         String
+  category     AssetCategory
+  currency     String?
+  exchange     String?
+  iconUrl      String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  transactions Transaction[]
+}
+
+model Transaction {
+  id        Int             @id @default(autoincrement())
+  assetId   Int
+  type      TransactionType
+  quantity  Float
+  price     Float
+  fee       Float?
+  note      String?
+  date      DateTime        @default(now())
+  createdAt DateTime        @default(now())
+  asset     Asset           @relation(fields: [assetId], references: [id])
+}
