@@ -1,22 +1,22 @@
-# 💹 Portfolio Tracker (Next.js + Tailwind + Shadcn UI + Prisma + Yahoo Finance)
+# 💹 Portfolio Tracker (Next.js + Tailwind + Shadcn UI + Prisma + Yahoo Finance + NextAuth.js)
 
-A **Full-Stack Portfolio Tracker** web app built entirely with **Next.js 15 (App Router)**.  
-It uses **Prisma ORM** for database access, **Tailwind + Shadcn UI** for design, and **Yahoo Finance API** for live market data.  
-Fully deployable on **Vercel** without any external backend!
+A **Full-Stack Portfolio Tracker** built with **Next.js 15 (App Router)** and integrated authentication via **NextAuth.js**.  
+It uses **Prisma ORM** for database access, **Tailwind + Shadcn UI** for design, and **Yahoo Finance API** for real-time market data.  
+Fully deployable on **Vercel** with **free-tier database** on Railway / Neon / PlanetScale.
 
 ---
 
 ## 🚀 Tech Stack
 
-| Layer        | Technology                              |
-| ------------ | --------------------------------------- |
-| Frontend     | Next.js 15 (App Router)                 |
-| Styling      | Tailwind CSS + Shadcn UI                |
-| Backend      | Next.js API Routes                      |
-| Database ORM | Prisma                                  |
-| Database     | PlanetScale / Neon / Supabase / Railway |
-| Data Source  | Yahoo Finance API (`yahoo-finance2`)    |
-| Deployment   | Vercel                                  |
+| Layer | Technology |
+|--------|-------------|
+| Framework | Next.js 15 (App Router) |
+| Styling | Tailwind CSS + Shadcn UI |
+| Database ORM | Prisma |
+| Auth | NextAuth.js (Google OAuth + Prisma Adapter) |
+| Data Source | Yahoo Finance API (`yahoo-finance2`) |
+| Deployment | Vercel |
+| Database | Railway / Neon / PlanetScale |
 
 ---
 
@@ -40,6 +40,9 @@ Fully deployable on **Vercel** without any external backend!
   - Toggle between dark and light themes (Shadcn UI)
 - 📱 **Responsive Design**
   - Optimized for Desktop, Tablet, and Mobile
+- 🔐 **Authentication (NextAuth.js)**
+  - Login via Google (OAuth)
+  - Each user has separate portfolio data
 - ⚙️ **Full API Integration**
   - Next.js API Routes handle CRUD and Yahoo Finance fetching
 
