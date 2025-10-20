@@ -9,7 +9,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm shadow-lg border border-slate-200">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-slate-800">
-            Sign in to <span className="text-blue-600">PorTrack</span>
+            Sign in to <span className="text-blue-600">Portify</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center gap-4">

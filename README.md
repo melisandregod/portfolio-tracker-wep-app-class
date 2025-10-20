@@ -1,4 +1,4 @@
-# 💹 Portfolio Tracker (Next.js + Tailwind + Shadcn UI + Prisma + Yahoo Finance + NextAuth.js)
+# 💹 Portify The Portfolio Tracker (Next.js + Tailwind + Shadcn UI + Prisma + Yahoo Finance + NextAuth.js)
 
 A **Full-Stack Portfolio Tracker** built with **Next.js 15 (App Router)** and integrated authentication via **NextAuth.js**.  
 It uses **Prisma ORM** for database access, **Tailwind + Shadcn UI** for design, and **Yahoo Finance API** for real-time market data.  
