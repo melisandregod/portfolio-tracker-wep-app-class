@@ -6,6 +6,8 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Sidebar } from "@/components/layouts/sidebar";
+import { Navbar } from "@/components/layouts/navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,7 +51,13 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <div className="flex h-screen bg-background text-foreground">
+              <Sidebar />
+              <main className="flex-1 flex flex-col overflow-y-auto">
+                <Navbar />
+                <div className="p-6 flex-1">{children}</div>
+              </main>
+            </div>
           </ThemeProvider>
         </SessionProvider>
       </body>

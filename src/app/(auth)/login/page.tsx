@@ -9,13 +9,13 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm shadow-lg border border-slate-200">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-slate-800">
-            Sign in to <span className="text-blue-600">Portify</span>
+            Sign in to <span className="text-primary">Portify</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center gap-4">
           <Button
             onClick={() => signIn("google", { callbackUrl: "/" })}
-            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-secondary cursor-pointer"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -32,14 +32,14 @@ export default function LoginPage() {
             By signing in, you agree to our{" "}
             <a
               href="#"
-              className="text-blue-600 underline underline-offset-2 hover:text-blue-700"
+              className="text-primary underline underline-offset-2 hover:text-secondary"
             >
               Terms of Service
             </a>{" "}
             and{" "}
             <a
               href="#"
-              className="text-blue-600 underline underline-offset-2 hover:text-blue-700"
+              className="text-primary underline underline-offset-2 hover:text-secondary"
             >
               Privacy Policy
             </a>
