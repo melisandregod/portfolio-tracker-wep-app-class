@@ -19,30 +19,20 @@ enum TransactionType {
   SELL
 }
 
-model Asset {
-  id           Int           @id @default(autoincrement())
-  symbol       String        @unique
-  name         String
-  category     AssetCategory
-  currency     String?
-  exchange     String?
-  iconUrl      String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  transactions Transaction[]
-}
-
 model Transaction {
-  id        Int             @id @default(autoincrement())
-  assetId   Int
-  type      TransactionType
-  quantity  Float
-  price     Float
-  fee       Float?
-  note      String?
-  date      DateTime        @default(now())
-  createdAt DateTime        @default(now())
-  asset     Asset           @relation(fields: [assetId], references: [id])
+  id          Int              @id @default(autoincrement())
+  symbol      String            // e.g. "NVDA", "BTC"
+  name        String?           // Optional: "NVIDIA Corporation"
+  category    AssetCategory
+  type        TransactionType
+  quantity    Float
+  price       Float
+  fee         Float?
+  note        String?
+  date        DateTime          @default(now())
+  createdAt   DateTime          @default(now())
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
@@ -53,6 +43,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  transactions  Transaction[]
 }
 
 model Account {

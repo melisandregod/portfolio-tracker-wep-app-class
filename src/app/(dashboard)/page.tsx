@@ -1,24 +1,28 @@
 "use client"
 
-import { useSession, signOut } from "next-auth/react"
+import { PortfolioSummary } from "@/components/overview/portfolio-summary"
+import { AssetAllocationChart } from "@/components/overview/asset-allocation-chart"
+import { CategorySummaryTable } from "@/components/overview/category-summary-table"
+import { PerformanceChart } from "@/components/overview/performance-chart"
+import { TopHoldingsTable } from "@/components/overview/top-holdings-table"
 
-export default function DashboardPage() {
-  const { data: session, status } = useSession()
-
-  if (status === "loading") return <p>Loading...</p>
-  if (!session) return <p>Unauthorized</p>
-
+export default function OverviewPage() {
   return (
-    <div className="p-10">
-      <h1 className="text-2xl font-bold">Welcome, {session.user?.name}</h1>
-      <p>{session.user?.email}</p>
+    <div className="flex flex-col gap-8 p-6">
+      {/* Portfolio Summary */}
+      <PortfolioSummary />
 
-      <button
-        onClick={() => signOut({ callbackUrl: "/login" })}
-        className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
-      >
-        Sign out
-      </button>
+      {/* Asset Allocation + Category Summary */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <AssetAllocationChart />
+        <CategorySummaryTable />
+      </section>
+
+      {/* Performance Overview */}
+      <PerformanceChart />
+
+      {/* Mini Table - Top Holdings */}
+      <TopHoldingsTable />
     </div>
   )
 }
