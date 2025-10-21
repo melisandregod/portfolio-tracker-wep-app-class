@@ -136,15 +136,22 @@ export async function GET() {
     .filter((h) => h.quantity > 0)
     .sort((a, b) => b.currentValue - a.currentValue)
     .slice(0, 5)
-    .map((h) => ({
-      symbol: h.symbol,
-      type: h.category,
-      value: h.currentValue,
-      gain: `${h.gainPercent.toFixed(2)}%`,
-      allocation: `${
-        totalValue > 0 ? ((h.currentValue / totalValue) * 100).toFixed(1) : 0
-      }%`,
-    }));
+    .map((h) => {
+      const gainPercent = Number.isFinite(h.gainPercent) ? h.gainPercent : 0;
+
+      const allocationPercent =
+        totalValue > 0 && Number.isFinite(h.currentValue)
+          ? (h.currentValue / totalValue) * 100
+          : 0;
+
+      return {
+        symbol: h.symbol,
+        type: h.category,
+        value: Number(h.currentValue.toFixed(2)), // ก็บเป็น number ทศนิยม 2 ตำแหน่ง
+        gain: `${gainPercent >= 0 ? "+" : ""}${gainPercent.toFixed(2)}%`, //  มีเครื่องหมาย +/-
+        allocation: `${allocationPercent.toFixed(2)}%`, // ทศนิยม 2 ตำแหน่งเสมอ
+      };
+    });
   return NextResponse.json({
     summary: { totalValue, totalCost, gainLossPercent },
     categories,

@@ -82,7 +82,7 @@ export default function OverviewPage() {
           <span>Last updated: {timestamp}</span>
           <button
             onClick={() => mutate()}
-            className="text-muted-foreground hover:text-foreground transition"
+            className="text-muted-foreground hover:text-foreground transition cursor-pointer"
             title="Refresh"
           >
             <RefreshCcw className="h-4 w-4" />
