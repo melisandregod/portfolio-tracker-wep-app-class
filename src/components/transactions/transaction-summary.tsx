@@ -12,7 +12,10 @@ export function TransactionSummary() {
     return (
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i}>
+          <Card
+            key={i}
+            className="border-none bg-gradient-to-br from-background to-muted/20 shadow-sm"
+          >
             <CardHeader>
               <CardTitle>
                 <Skeleton className="h-4 w-32" />
@@ -33,7 +36,7 @@ export function TransactionSummary() {
       </p>
     )
 
-  // คำนวณยอดรวมแบบง่าย
+  // คำนวณยอดรวม
   const totalBuy = data
     .filter((t) => t.type === "BUY")
     .reduce((sum, t) => sum + t.quantity * t.price, 0)
@@ -42,40 +45,69 @@ export function TransactionSummary() {
     .filter((t) => t.type === "SELL")
     .reduce((sum, t) => sum + t.quantity * t.price, 0)
 
-  // ถ้ายังไม่มี SELL เลย → ไม่มีกำไร
   const hasSell = data.some((t) => t.type === "SELL")
   const net = hasSell ? totalSell - totalBuy : 0
 
   return (
     <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Total Buy</CardTitle>
+      {/*  Total Buy */}
+      <Card className="border-none bg-gradient-to-br from-emerald-500/10 via-background to-background shadow-sm hover:shadow-md transition-all">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Total Buy
+          </CardTitle>
         </CardHeader>
-        <CardContent className="text-xl font-semibold text-muted-foreground">
-          ${totalBuy.toLocaleString()}
+        <CardContent>
+          <p className="text-2xl font-bold text-emerald-500">
+            ${totalBuy.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+          </p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Total Sell</CardTitle>
+      {/* Total Sell */}
+      <Card className="border-none bg-gradient-to-br from-sky-500/10 via-background to-background shadow-sm hover:shadow-md transition-all">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Total Sell
+          </CardTitle>
         </CardHeader>
-        <CardContent className="text-xl font-semibold text-muted-foreground">
-          ${totalSell.toLocaleString()}
+        <CardContent>
+          <p className="text-2xl font-bold text-sky-500">
+            ${totalSell.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+          </p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Net Profit/Loss</CardTitle>
+      {/*  Net Profit/Loss */}
+      <Card className="border-none bg-gradient-to-br from-background to-muted/20 shadow-sm hover:shadow-md transition-all">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Net Profit / Loss
+          </CardTitle>
         </CardHeader>
-        <CardContent
-          className={`text-xl font-semibold ${
-            net > 0 ? "text-green-500" : net < 0 ? "text-red-500" : "text-muted-foreground"
-          }`}
-        >
-          {net === 0 ? "–" : `${net > 0 ? "+" : "-"}$${Math.abs(net).toLocaleString()}`}
+        <CardContent>
+          <p
+            className={`text-2xl font-bold ${
+              net > 0
+                ? "text-green-500"
+                : net < 0
+                ? "text-red-500"
+                : "text-muted-foreground"
+            }`}
+          >
+            {net === 0
+              ? "–"
+              : `$${Math.abs(net).toLocaleString(undefined, {
+                  maximumFractionDigits: 2,
+                })}`}
+          </p>
+          <p className="text-xs mt-1 text-muted-foreground">
+            {net > 0
+              ? "Profit"
+              : net < 0
+              ? "Loss"
+              : "No realized gains yet"}
+          </p>
         </CardContent>
       </Card>
     </section>
