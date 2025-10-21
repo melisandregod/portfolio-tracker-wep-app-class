@@ -1,16 +1,36 @@
 "use client"
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
-const holdings = [
-  { asset: "NVDA", type: "Stock", value: "$2,340", gain: "+14.2%", allocation: "18%" },
-  { asset: "AAPL", type: "Stock", value: "$1,780", gain: "+6.8%", allocation: "12%" },
-  { asset: "BTC", type: "Crypto", value: "$2,900", gain: "+25.5%", allocation: "20%" },
-  { asset: "GLD", type: "ETF (Gold)", value: "$1,050", gain: "+3.2%", allocation: "7%" },
-]
+type Holding = {
+  symbol: string
+  type: string
+  value: number
+  gain: string
+  allocation: string
+}
 
-export function TopHoldingsTable() {
+export function TopHoldingsTable({ data }: { data: Holding[] }) {
+  if (!data?.length)
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Top Holdings</CardTitle>
+        </CardHeader>
+        <CardContent className="text-muted-foreground">
+          No holdings data available.
+        </CardContent>
+      </Card>
+    )
+
   return (
     <Card>
       <CardHeader>
@@ -28,12 +48,24 @@ export function TopHoldingsTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {holdings.map((h, i) => (
+            {data.map((h, i) => (
               <TableRow key={i}>
-                <TableCell>{h.asset}</TableCell>
+                <TableCell className="font-medium">{h.symbol}</TableCell>
                 <TableCell>{h.type}</TableCell>
-                <TableCell>{h.value}</TableCell>
-                <TableCell className="text-green-500">{h.gain}</TableCell>
+                <TableCell>
+                  ${h.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                </TableCell>
+                <TableCell
+                  className={
+                    h.gain.startsWith("-")
+                      ? "text-red-500"
+                      : h.gain.startsWith("+") || !h.gain.startsWith("-")
+                      ? "text-green-500"
+                      : "text-muted-foreground"
+                  }
+                >
+                  {h.gain}
+                </TableCell>
                 <TableCell>{h.allocation}</TableCell>
               </TableRow>
             ))}

@@ -1,55 +1,73 @@
-"use client"
+"use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
-} from "@/components/ui/chart"
-import { PieChart, Pie, Cell } from "recharts"
+  type ChartConfig,
+} from "@/components/ui/chart";
+import { Pie, PieChart, Cell } from "recharts";
 
-const pieData = [
-  { name: "Stocks", value: 45 },
-  { name: "ETFs", value: 25 },
-  { name: "Crypto", value: 20 },
-  { name: "Gold", value: 10 },
-]
+// Type ของข้อมูล Allocation ที่มาจาก API
+export type Allocation = {
+  name: string;
+  value: number;
+};
 
-const chartConfig = {
-  Stocks: { label: "Stocks", color: "hsl(142, 71%, 45%)" }, // green
-  ETFs: { label: "ETFs", color: "hsl(217, 91%, 60%)" },     // blue
-  Crypto: { label: "Crypto", color: "hsl(45, 93%, 60%)" },  // yellow
-  Gold: { label: "Gold", color: "hsl(30, 90%, 60%)" },      // orange
-}
+// สีใน chart
+const COLORS = ["#16a34a", "#2563eb", "#facc15", "#f97316", "#9333ea"];
 
-export function AssetAllocationChart() {
+// Chart config ใช้กำหนดสีและ label ของ chart (ตาม type ChartConfig)
+const chartConfig: ChartConfig = {
+  CRYPTO: { label: "Crypto", color: "#2563eb" },
+  STOCK: { label: "Stock", color: "#16a34a" },
+  ETF: { label: "ETF", color: "#facc15" },
+  GOLD: { label: "Gold", color: "#f97316" },
+};
+
+export function AssetAllocationChart({ data }: { data: Allocation[] }) {
+  if (!data?.length)
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Asset Allocation</CardTitle>
+        </CardHeader>
+        <CardContent className="text-muted-foreground">
+          No data available
+        </CardContent>
+      </Card>
+    );
+
   return (
-    <Card className="">
+    <Card>
       <CardHeader>
         <CardTitle>Asset Allocation</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="">
-          <PieChart>
+        {/* ChartContainer ต้องมี config ที่ type ตรงกับ ChartConfig */}
+        <ChartContainer config={chartConfig}>
+          <PieChart width={250} height={250}>
             <Pie
-              data={pieData}
+              data={data}
               dataKey="value"
               nameKey="name"
-              innerRadius={50}
+              cx="50%"
+              cy="50%"
               outerRadius={90}
-              label
+              label={({ name, value }) => `${name} ${value}%`}
             >
-              {pieData.map((entry, index) => (
-                <Cell key={index} fill={Object.values(chartConfig)[index].color} />
+              {data.map((entry, i) => (
+                <Cell key={i} fill={chartConfig[entry.name]?.color || "#999"} />
               ))}
             </Pie>
-            <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+            <ChartTooltip content={<ChartTooltipContent />} />
             <ChartLegend content={<ChartLegendContent />} />
           </PieChart>
         </ChartContainer>
       </CardContent>
     </Card>
-  )
+  );
 }

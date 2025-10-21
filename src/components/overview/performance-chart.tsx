@@ -1,44 +1,64 @@
 "use client"
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-} from "@/components/ui/chart"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts"
+import { ChartContainer, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
 
-const performanceData = [
-  { month: "Jan", portfolio: 10000, benchmark: 9800 },
-  { month: "Feb", portfolio: 10200, benchmark: 9950 },
-  { month: "Mar", portfolio: 10500, benchmark: 10100 },
-  { month: "Apr", portfolio: 10750, benchmark: 10300 },
-]
-
-const chartConfig = {
-  portfolio: { label: "Portfolio", color: "hsl(142, 71%, 45%)" },
-  benchmark: { label: "Benchmark", color: "hsl(220, 9%, 65%)" },
+type PerformancePoint = {
+  date: string
+  portfolio: number
+  benchmark: number
 }
 
-export function PerformanceChart() {
+export function PerformanceChart({ data }: { data: PerformancePoint[] }) {
+  if (!data?.length)
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Performance Overview</CardTitle>
+        </CardHeader>
+        <CardContent className="text-muted-foreground">
+          No performance data available.
+        </CardContent>
+      </Card>
+    )
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Performance Overview</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px] w-full">
-          <LineChart data={performanceData}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
-            <XAxis dataKey="month" tickLine={false} axisLine={false} />
-            <YAxis tickLine={false} axisLine={false} />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <ChartLegend content={<ChartLegendContent />} />
-            <Line type="monotone" dataKey="portfolio" stroke="var(--color-portfolio)" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="benchmark" stroke="var(--color-benchmark)" strokeWidth={2} dot={false} strokeDasharray="4 4" />
-          </LineChart>
+        <ChartContainer
+          config={{
+            portfolio: { label: "Portfolio", color: "#16a34a" },
+            benchmark: { label: "Benchmark", color: "#9ca3af" },
+          }}
+          className="h-[300px]"
+        >
+          <ResponsiveContainer >
+            <LineChart data={data}>
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip content={<ChartTooltipContent />} />
+              <Line
+                type="monotone"
+                dataKey="portfolio"
+                stroke="#16a34a"
+                strokeWidth={2}
+                dot={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="benchmark"
+                stroke="#9ca3af"
+                strokeDasharray="4 4"
+                strokeWidth={2}
+                dot={false}
+              />
+              <ChartLegend content={<ChartLegendContent />} />
+            </LineChart>
+          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
     </Card>
