@@ -20,25 +20,25 @@ enum TransactionType {
 }
 
 model Transaction {
-  id          Int              @id @default(autoincrement())
-  symbol      String            // e.g. "NVDA", "BTC"
-  name        String?           // Optional: "NVIDIA Corporation"
-  category    AssetCategory
-  type        TransactionType
-  quantity    Float
-  price       Float
-  fee         Float?
-  note        String?
-  date        DateTime          @default(now())
-  createdAt   DateTime          @default(now())
-  userId      String
-  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        Int             @id @default(autoincrement())
+  symbol    String // e.g. "NVDA", "BTC"
+  name      String? // Optional: "NVIDIA Corporation"
+  category  AssetCategory
+  type      TransactionType
+  quantity  Float
+  price     Float
+  fee       Float?
+  note      String?
+  date      DateTime        @default(now())
+  createdAt DateTime        @default(now())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?       @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
@@ -60,6 +60,7 @@ model Account {
   id_token          String? @db.Text
   session_state     String?
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([provider, providerAccountId])
 }
 
