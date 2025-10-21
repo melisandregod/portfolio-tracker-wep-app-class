@@ -14,5 +14,5 @@ export type OverviewResponse = {
     gain: string
     allocation: string
   }[]
-  performance: { date: string; portfolio: number; benchmark: number }[]
 }
+export type PerformancePoint = { date: string; portfolio: number }

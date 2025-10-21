@@ -17,9 +17,6 @@ export type Allocation = {
   value: number;
 };
 
-// สีใน chart
-const COLORS = ["#16a34a", "#2563eb", "#facc15", "#f97316", "#9333ea"];
-
 // Chart config ใช้กำหนดสีและ label ของ chart (ตาม type ChartConfig)
 const chartConfig: ChartConfig = {
   CRYPTO: { label: "Crypto", color: "#2563eb" },

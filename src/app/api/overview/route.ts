@@ -145,19 +145,10 @@ export async function GET() {
         totalValue > 0 ? ((h.currentValue / totalValue) * 100).toFixed(1) : 0
       }%`,
     }));
-
-  // 8Mock performance
-  const performance = [
-    { date: "Jan", portfolio: 10000, benchmark: 9800 },
-    { date: "Feb", portfolio: 10200, benchmark: 9950 },
-    { date: "Mar", portfolio: 10500, benchmark: 10100 },
-  ];
-
   return NextResponse.json({
     summary: { totalValue, totalCost, gainLossPercent },
     categories,
     allocation,
     topHoldings,
-    performance,
   });
 }
