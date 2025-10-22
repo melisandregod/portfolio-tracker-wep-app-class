@@ -1,6 +1,10 @@
 {
-  "Login": {
-    "title": "Sign in to Portify",
-    "button": "Sign in with Google"
+  "Navbar": {
+    "signOut": "Sign out"
+  },
+  "Sidebar": {
+    "overview": "Overview",
+    "transactions": "Transactions",
+    "analytics": "Analytics"
   }
 }

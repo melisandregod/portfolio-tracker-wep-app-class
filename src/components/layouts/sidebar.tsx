@@ -1,18 +1,19 @@
 "use client";
 
-import { usePathname } from "@/i18n/navigation"; // ✅ ใช้ usePathname ของ next-intl
-import { Link } from "@/i18n/navigation"; // ✅ ใช้ Link ของ next-intl
+import { useTranslations } from "next-intl";
+import { usePathname, Link } from "@/i18n/navigation";
 import { BarChart, Home, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const links = [
-  { name: "Overview", href: "/dashboard", icon: Home },
-  { name: "Transactions", href: "/dashboard/transactions", icon: List },
-  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart },
-];
-
 export function Sidebar() {
-  const pathname = usePathname(); // pathname จะมี locale prefix เช่น /en/dashboard
+  const t = useTranslations("Sidebar");
+  const pathname = usePathname();
+
+  const links = [
+    { name: t("overview"), href: "/dashboard", icon: Home },
+    { name: t("transactions"), href: "/dashboard/transactions", icon: List },
+    { name: t("analytics"), href: "/dashboard/analytics", icon: BarChart },
+  ];
 
   return (
     <aside className="w-64 border-r bg-muted/20 p-4">

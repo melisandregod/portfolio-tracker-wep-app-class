@@ -1,5 +1,6 @@
-// components/navbar.tsx
 "use client";
+
+import { useLocale, useTranslations } from "next-intl";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "../theme-toggle";
@@ -7,6 +8,8 @@ import { LanguageSwitcher } from "../language-switcher";
 
 export function Navbar() {
   const { data: session } = useSession();
+  const t = useTranslations("Navbar");
+  const locale = useLocale();
 
   return (
     <header className="flex justify-end items-center border-b bg-background px-6 py-3">
@@ -18,9 +21,9 @@ export function Navbar() {
           className="cursor-pointer"
           variant="outline"
           size="sm"
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={() => signOut({ callbackUrl: `/${locale}/login` })}
         >
-          Sign out
+          {t("signOut")}
         </Button>
       </div>
     </header>
