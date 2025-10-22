@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PerformanceMetrics } from "@/components/analytics/performance-metrics";
 import { ProjectionChart } from "@/components/analytics/projection-chart";
 import { TopAssetsTable } from "@/components/analytics/top-assets-table";
+import { PerformanceBenchmarks } from "@/components/analytics/performance-chart";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -35,6 +36,7 @@ export default function AnalyticsPage() {
 
       {/*  Performance Overview */}
       <PerformanceMetrics data={metrics} />
+      <PerformanceBenchmarks />
 
       {/*  Projection for next 5 years */}
       <ProjectionChart data={projection} />
