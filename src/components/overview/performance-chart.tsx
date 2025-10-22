@@ -13,6 +13,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  ResponsiveContainer,
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { PerformancePoint } from "@/types/overview";
@@ -58,16 +59,16 @@ export function PerformanceChart({ data, isLoading, range, setRange }: Props) {
         </div>
       </CardHeader>
 
-      <CardContent className="px-50 pb-6">
+      <CardContent className="px-1 py-4">
         {isLoading || !data ? (
-          <Skeleton className="h-[300px] w-full rounded-xl" />
+          <Skeleton className="h-[300px] rounded-xl" />
         ) : (
-          <div className="h-[340px] w-full">
+          <div className="h-[300px] w-full flex justify-center items-center">
             <ChartContainer
               config={{
                 portfolio: { label: "Portfolio", color: "#16a34a" },
               }}
-              className="h-full w-full"
+              className="h-full"
             >
               <AreaChart
                 data={data}

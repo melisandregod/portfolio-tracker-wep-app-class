@@ -10,6 +10,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { usePagination } from "@/hooks/use-pagination"
 
 type Holding = {
   symbol: string
@@ -20,6 +22,9 @@ type Holding = {
 }
 
 export function TopHoldingsTable({ data }: { data: Holding[] }) {
+  const { page, setPage, totalPages, paginatedData, startIdx, endIdx } =
+    usePagination(data, 6) // แสดงหน้า 5 แถวต่อหน้า
+
   if (!data?.length)
     return (
       <Card className="border-none bg-muted/30 text-center py-12">
@@ -66,9 +71,10 @@ export function TopHoldingsTable({ data }: { data: Holding[] }) {
             </TableHeader>
 
             <TableBody>
-              {data.map((h, i) => {
+              {paginatedData.map((h, i) => {
                 const isLoss = h.gain.startsWith("-")
-                const isGain = h.gain.startsWith("+") || (!isLoss && h.gain !== "0%")
+                const isGain =
+                  h.gain.startsWith("+") || (!isLoss && h.gain !== "0%")
 
                 const gainColor = isGain
                   ? "text-green-600"
@@ -82,39 +88,28 @@ export function TopHoldingsTable({ data }: { data: Holding[] }) {
                   <ArrowDownRight className="w-4 h-4 text-red-500" />
                 ) : null
 
-                
-
                 return (
                   <TableRow
                     key={i}
                     className="hover:bg-muted/25 transition-all border-b border-muted/20"
                   >
-                    {/* Symbol */}
                     <TableCell className="font-semibold text-foreground">
                       {h.symbol}
                     </TableCell>
-
-                    {/* Type */}
                     <TableCell className="text-muted-foreground">
                       {h.type}
                     </TableCell>
-
-                    {/* Value */}
                     <TableCell className="text-right text-foreground font-medium">
                       ${h.value.toLocaleString(undefined, {
                         maximumFractionDigits: 2,
                       })}
                     </TableCell>
-
-                    {/* Gain / Loss */}
                     <TableCell
                       className={`text-right font-semibold flex items-center justify-end gap-1 ${gainColor}`}
                     >
                       {gainIcon}
                       {h.gain}
                     </TableCell>
-
-                    {/* Allocation + bar */}
                     <TableCell className="text-right font-medium text-foreground w-[20%]">
                       <div className="flex flex-col items-end">
                         <span>{h.allocation}</span>
@@ -125,6 +120,45 @@ export function TopHoldingsTable({ data }: { data: Holding[] }) {
               })}
             </TableBody>
           </Table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="flex justify-between items-center mt-4 text-sm text-muted-foreground">
+          <span>
+            Showing {startIdx}–{endIdx} of {data.length}
+          </span>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(page - 1)}
+              disabled={page === 1}
+            >
+              Previous
+            </Button>
+
+            {/* ตัวเลขหน้า */}
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <Button
+                key={i}
+                variant={page === i + 1 ? "default" : "outline"}
+                size="sm"
+                onClick={() => setPage(i + 1)}
+              >
+                {i + 1}
+              </Button>
+            ))}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(page + 1)}
+              disabled={page === totalPages}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

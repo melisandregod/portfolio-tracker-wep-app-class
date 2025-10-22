@@ -56,13 +56,14 @@ export default function OverviewPage() {
           </Card>
         </div>
 
-        <Card className="p-6">
-          <Skeleton className="h-[300px] w-full" />
-        </Card>
-
-        <Card className="p-6">
-          <Skeleton className="h-[250px] w-full" />
-        </Card>
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card className="p-6">
+            <Skeleton className="h-[250px] w-full" />
+          </Card>
+          <Card className="p-6">
+            <Skeleton className="h-[250px] w-full" />
+          </Card>
+        </div>
       </div>
     );
 
@@ -100,17 +101,16 @@ export default function OverviewPage() {
       </div>
 
       {/* Performance Chart (filter) */}
-      <div>
+      <div className="grid md:grid-cols-2 gap-6">
         <PerformanceChart
           data={performance}
           isLoading={perfLoading}
           range={range}
           setRange={setRange}
         />
+        {/* Top Holdings */}
+        <TopHoldingsTable data={data.topHoldings} />
       </div>
-
-      {/* Top Holdings */}
-      <TopHoldingsTable data={data.topHoldings} />
     </div>
   );
 }
