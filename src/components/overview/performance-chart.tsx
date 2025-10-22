@@ -13,7 +13,6 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  ResponsiveContainer,
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { PerformancePoint } from "@/types/overview";
