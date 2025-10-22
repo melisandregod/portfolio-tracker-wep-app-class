@@ -1,11 +1,9 @@
-"use client"
+"use client";
 
-import { SessionProvider } from "next-auth/react"
-import { SWRConfig } from "swr"
-import { ThemeProvider } from "@/components/theme-provider"
-import { fetcher } from "@/lib/fetcher"
-import { Sidebar } from "@/components/layouts/sidebar"
-import { Navbar } from "@/components/layouts/navbar"
+import { SessionProvider } from "next-auth/react";
+import { SWRConfig } from "swr";
+import { ThemeProvider } from "@/components/theme-provider";
+import { fetcher } from "@/lib/fetcher";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -24,15 +22,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex h-screen bg-background text-foreground">
-            <Sidebar />
-            <main className="flex-1 flex flex-col overflow-y-auto">
-              <Navbar />
-              <div className="p-6 flex-1">{children}</div>
-            </main>
-          </div>
+          {children}
         </ThemeProvider>
       </SWRConfig>
     </SessionProvider>
-  )
+  );
 }

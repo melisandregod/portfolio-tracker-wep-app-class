@@ -7,9 +7,9 @@ import { BarChart, Home, List } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const links = [
-  { name: "Overview", href: "/", icon: Home },
-  { name: "Transactions", href: "/transactions", icon: List },
-  { name: "Analytics", href: "/analytics", icon: BarChart },
+  { name: "Overview", href: "/dashboard", icon: Home },
+  { name: "Transactions", href: "/dashboard/transactions", icon: List },
+  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart },
 ]
 
 export function Sidebar() {
