@@ -1,185 +1,182 @@
-# 💹 Portify The Portfolio Tracker (Next.js + Tailwind + Shadcn UI + Prisma + Yahoo Finance + NextAuth.js)
+# 💼 Portify — Portfolio Tracker & Analytics
 
-A **Full-Stack Portfolio Tracker** built with **Next.js 15 (App Router)** and integrated authentication via **NextAuth.js**.  
-It uses **Prisma ORM** for database access, **Tailwind + Shadcn UI** for design, and **Yahoo Finance API** for real-time market data.  
-Fully deployable on **Vercel** with **free-tier database** on Railway / Neon / PlanetScale.
+Portify is a **Next.js full-stack web app** for tracking your personal investments — including **stocks, ETFs, crypto, and gold** — with **real-time market data**, **interactive analytics**, and **multi-asset benchmarking**.
 
 ---
 
-## 🚀 Tech Stack
+## 🚀 Features
 
-| Layer | Technology |
-|--------|-------------|
-| Framework | Next.js 15 (App Router) |
-| Styling | Tailwind CSS + Shadcn UI |
-| Database ORM | Prisma |
-| Auth | NextAuth.js (Google OAuth + Prisma Adapter) |
-| Data Source | Yahoo Finance API (`yahoo-finance2`) |
-| Deployment | Vercel |
-| Database | Railway / Neon / PlanetScale |
+### 📊 Portfolio Overview
+- Real-time portfolio value and profit/loss tracking  
+- Automatic **current price fetching** via Yahoo Finance API  
+- Category breakdowns (Stocks / ETFs / Crypto / Gold)
+- DCA / Transaction history with gain-loss % calculation  
 
----
+### 📈 Analytics Dashboard
+- Portfolio vs Benchmarks (**S&P500, NASDAQ, BTC, GOLD**)
+- Performance metrics:
+  - CAGR (Compound Annual Growth Rate)
+  - Sharpe Ratio
+  - Max Drawdown
+- Projected portfolio growth (5-year simulation)
+- Top / Worst performing assets
 
-## 🧩 Features
-
-- 📊 **Dashboard Overview**
-  - Total portfolio value, gain/loss %, cost basis
-  - Pie chart for asset allocation (Stocks / ETFs / Crypto / Gold)
-- 💹 **Live Market Data (Yahoo Finance)**
-  - Fetch stock / ETF / crypto prices in real time
-  - Example tickers: AAPL, TSLA, NVDA, BTC-USD, ETH-USD
-- 💰 **Transaction Management**
-  - Add, edit, delete holdings
-  - Calculate average cost, unrealized P/L
-- 🔄 **DCA & Rebalancing**
-  - Monthly DCA logs
-  - Target vs Actual allocation view
-- 📈 **Index Comparison**
-  - Compare portfolio vs S&P500, NASDAQ100, BTC
-- 🌗 **Dark / Light Mode**
-  - Toggle between dark and light themes (Shadcn UI)
-- 📱 **Responsive Design**
-  - Optimized for Desktop, Tablet, and Mobile
-- 🔐 **Authentication (NextAuth.js)**
-  - Login via Google (OAuth)
-  - Each user has separate portfolio data
-- ⚙️ **Full API Integration**
-  - Next.js API Routes handle CRUD and Yahoo Finance fetching
+### 🧩 Other Highlights
+- Secure authentication via **NextAuth (Google OAuth)**
+- Fully **responsive design**
+- **Dark / Light** mode toggle (shadcn/ui)
+- Database powered by **Prisma + PostgreSQL (Railway)**
+- **Deployed on Vercel**
 
 ---
 
-## 🏗️ Folder Structure
+## 🛠️ Tech Stack
 
-```
-src/
-├─ app/
-│   ├─ (main)/
-│   │   ├─ dashboard/
-│   │   │   └─ page.tsx
-│   │   ├─ layout.tsx
-│   │   └─ page.tsx
-│   ├─ api/
-│   │   ├─ portfolio/
-│   │   │   └─ route.ts    # CRUD portfolio routes
-│   │   └─ prices/
-│   │       └─ route.ts    # Yahoo Finance integration
-│   ├─ components/
-│   │   ├─ charts/
-│   │   ├─ ui/
-│   │   └─ layout/
-│   ├─ types/
-│   │   └─ portfolio.ts
-│   └─ styles/
-│       └─ globals.css
-├─ lib/
-│   ├─ prisma.ts
-│   └─ yfinance.ts
-├─ prisma/
-│   └─ schema.prisma
-├─ package.json
-├─ .env
-└─ README.md
-```
+| Layer | Tech |
+|-------|------|
+| **Frontend** | Next.js 15+, React, TypeScript |
+| **Styling** | TailwindCSS, Shadcn/UI |
+| **State** | SWR (client-side fetching & caching) |
+| **Backend** | Next.js Route Handlers (`/api`) |
+| **Database** | Prisma ORM + PostgreSQL |
+| **Auth** | NextAuth (JWT + Google Provider) |
+| **Market Data** | Yahoo Finance (yahoo-finance2) |
+| **Deployment** | Vercel (frontend) + Railway (DB) |
 
 ---
 
-## ⚙️ Installation & Setup
+## ⚙️ Installation
 
-### 1️⃣ Clone repository
-
+### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/melisandregod/portfolio-tracker-wep-app-class.git
 cd portfolio-tracker-wep-app-class
 ```
 
-### 2️⃣ Install dependencies
-
+### 2️⃣ Install Dependencies
 ```bash
 npm install
-# or
-pnpm install
 ```
 
-### 3️⃣ Set up environment variables
+*(if you hit dependency errors, try `npm install --legacy-peer-deps`)*
 
-Create `.env` file at the root:
+### 3️⃣ Environment Variables
 
+Create a `.env` file at the root with the following:
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@host:port/dbname"
+
+# NextAuth
+NEXTAUTH_SECRET="your-secret-key"
+NEXTAUTH_URL="http://localhost:3000"
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+# (Optional) For production on Vercel:
+NEXTAUTH_URL="https://your-deployed-url.vercel.app"
 ```
-DATABASE_URL="mysql://user:password@host:port/dbname"
-NEXT_PUBLIC_API_BASE="/api"
-```
 
-### 4️⃣ Initialize Prisma
+---
+
+## 🧱 Database Setup
 
 ```bash
-npx prisma migrate dev --name init
+npx prisma migrate dev
+npx prisma generate
 ```
 
-### 5️⃣ Run development server
+**Preview your schema:**
+```bash
+npx prisma studio
+```
+
+---
+
+## 🧩 Development
 
 ```bash
 npm run dev
 ```
 
-App will be running on [http://localhost:3000](http://localhost:3000)
+Visit:  
+👉 `http://localhost:3000`
 
 ---
 
-## 🧠 Example API Routes
+## 🗂️ Project Structure
 
-### GET `/api/prices?ticker=AAPL`
-
-Fetches latest price from Yahoo Finance.
-
-### POST `/api/portfolio`
-
-Add a holding:
-
-```json
-{
-  "symbol": "AAPL",
-  "shares": 10,
-  "avg_cost": 150
-}
+```
+src/
+ ├─ app/
+ │   ├─ (auth)/login/                # Google OAuth login
+ │   ├─ dashboard/
+ │   │   ├─ analytics/               # Analytics dashboard page
+ │   │   ├─ transactions/            # Transaction logs
+ │   │   └─ layout.tsx, page.tsx
+ │   ├─ api/
+ │   │   ├─ overview/                # Overview APIs
+ │   │   ├─ analytics/               # Analytics APIs (metrics + benchmarks)
+ │   │   └─ auth/                    # Auth APIs (NextAuth)
+ │   └─ layout.tsx, globals.css
+ ├─ components/
+ │   ├─ analytics/                   # Performance, Metrics, Projection, Tables
+ │   ├─ overview/                    # Overview charts
+ │   ├─ transactions/                # Transaction tables
+ │   └─ ui/                          # Shadcn UI (Card, Button, Chart, Theme)
+ ├─ hooks/                           # Custom hooks (usePagination, etc.)
+ ├─ lib/                             # Prisma, Auth, Utils
+ ├─ types/                           # Type definitions
 ```
 
-### GET `/api/portfolio`
+---
 
-List all holdings with calculated value.
+## 📈 APIs Overview
+
+### `/api/overview/performance`
+> Computes historical portfolio value timeline  
+→ Used in **Overview Performance Chart**
+
+### `/api/analytics`
+> Returns summary analytics: CAGR, Sharpe Ratio, Drawdown, projection, top/worst assets  
+→ Used in **Analytics Dashboard**
+
+### `/api/analytics/benchmarks`
+> Compares portfolio performance vs benchmarks  
+→ Used in **PerformanceBenchmarks Chart**
 
 ---
 
----
+## 🧠 Key Logic Notes
 
-## 🌐 Deployment on Vercel
-
-1. Push your project to GitHub
-2. Go to [Vercel](https://vercel.com) and import the repository
-3. Set your environment variables (`DATABASE_URL`, etc.) in Vercel Dashboard
-4. Click **Deploy** 🚀
-
-> Prisma + PlanetScale / Supabase work seamlessly on Vercel.
+- **Portfolio timeline** is calculated using user transactions (`BUY` / `SELL`)  
+- Each day’s value = Σ( quantity × closing price )
+- **Normalization (% growth)** starts from the first day with non-zero portfolio value
+- `max` range = from first investment date  
+- `day` range = last 2 trading days for meaningful comparison
 
 ---
 
-## 🧱 Future Enhancements
+## 🌐 Deployment
 
-- 🧑‍💻 Authentication with NextAuth.js
-- 📊 Historical performance charts
-- 💾 Export to CSV
-- 🌍 Thai stock market (SET) support
-- 🎨 More UI themes
+### 1️⃣ Vercel (Frontend)
+```bash
+vercel --prod
+```
 
----
-
-## 🧑‍💻 Author
-
-**Suwinai Aiamsumaung**  
-Full-Stack Developer & Portfolio Enthusiast  
-📈 Designed for learning, tracking, and optimizing personal investments.
+### 2️⃣ Railway (Database)
+- Create a new **PostgreSQL instance**
+- Copy its connection URL into `.env` → `DATABASE_URL`
 
 ---
 
-### 🏁 License
+## 🧾 License
+MIT © 2025 — Portify Project  
+Built with ❤️ using **Next.js**, **Prisma**, and **Yahoo Finance API**
 
-MIT License © 2025
+---
+
+## 🧠 Credits
+Developed by [Your Name]  
+**Portfolio Tracker / Analytics for modern investors**
