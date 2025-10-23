@@ -8,6 +8,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  ResponsiveContainer,
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart";
 
@@ -26,7 +27,7 @@ export function ProjectionChart({ data }: { data: ProjectionPoint }) {
       </CardHeader>
 
       <CardContent className="px-4 pb-6 pt-2 flex justify-center">
-        <div className="h-[360px]">
+        <ResponsiveContainer>
           <ChartContainer
             config={{
               value: { label: "Projected Value", color: "#16a34a" },
@@ -91,7 +92,7 @@ export function ProjectionChart({ data }: { data: ProjectionPoint }) {
               </LineChart>
             
           </ChartContainer>
-        </div>
+        </ResponsiveContainer>
       </CardContent>
     </Card>
   );

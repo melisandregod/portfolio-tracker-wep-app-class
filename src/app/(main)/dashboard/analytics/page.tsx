@@ -63,6 +63,23 @@ export default function AnalyticsPage() {
         <CardContent>Failed to load analytics data.</CardContent>
       </Card>
     );
+    if (
+    !data ||
+    !data.metrics ||
+    !data.projection?.length ||
+    (!data.topAssets?.length && !data.worstAssets?.length)
+  ) {
+    return (
+      <Card className="m-6 text-center border-none bg-muted/30 py-16">
+        <CardContent className="space-y-2">
+          <h2 className="text-lg font-semibold">No portfolio data yet</h2>
+          <p className="text-sm text-muted-foreground">
+            Add some transactions to see your performance analytics here.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Main Page (Loaded)
   const { metrics, projection, topAssets, worstAssets } = data;
