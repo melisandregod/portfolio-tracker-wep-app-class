@@ -1,0 +1,10 @@
+{
+  "Navbar": {
+    "signOut": "Sign out"
+  },
+  "Sidebar": {
+    "overview": "Overview",
+    "transactions": "Transactions",
+    "analytics": "Analytics"
+  }
+}
