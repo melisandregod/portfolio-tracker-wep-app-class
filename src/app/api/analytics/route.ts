@@ -55,7 +55,7 @@ export async function GET() {
       try {
         const quote = await yahooFinance.quote(symbol);
         return { symbol, price: quote.regularMarketPrice as number };
-      } catch (error) {
+      } catch {
         console.warn(`ดึงราคา ${symbol} ไม่ได้`);
         return { symbol, price: 0 };
       }
