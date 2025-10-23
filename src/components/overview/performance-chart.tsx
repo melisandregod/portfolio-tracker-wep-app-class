@@ -90,7 +90,7 @@ export function PerformanceChart({ data, isLoading, range, setRange }: Props) {
                 <XAxis
                   dataKey="date"
                    
-                  tickLine={true}
+                  tickLine={false}
                   axisLine={false}
                   tick={{ fontSize: 12, fill: "#6b7280" }}
                   tickFormatter={(value) => {
@@ -104,7 +104,7 @@ export function PerformanceChart({ data, isLoading, range, setRange }: Props) {
                   
                 />
                 <YAxis
-                  tickLine={true}
+                  tickLine={false}
                   axisLine={false}
                   tick={{ fontSize: 12, fill: "#6b7280" }}
                   domain={["auto", "auto"]}

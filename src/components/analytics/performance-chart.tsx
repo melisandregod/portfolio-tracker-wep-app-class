@@ -10,10 +10,13 @@ import {
   Tooltip,
   CartesianGrid,
   Legend,
+  ResponsiveContainer,
 } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { CustomTooltip } from "./custom-tool-tip";
 
 // Types
 interface PerformanceCompareResponse {
@@ -30,6 +33,8 @@ interface MergedPerformancePoint {
   [key: string]: number | string | undefined;
 }
 
+
+
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export function PerformanceBenchmarks() {
@@ -40,13 +45,11 @@ export function PerformanceBenchmarks() {
     "nasdaq",
   ]);
 
-  // ใช้ API เดียวรวมทั้ง portfolio + benchmarks
   const { data, isLoading } = useSWR<PerformanceCompareResponse>(
     `/api/analytics/benchmarks?range=${range}`,
     fetcher
   );
 
-  // ถ้าไม่มี data ยังโหลดอยู่
   if (!data || isLoading) {
     return (
       <Card className="border-none bg-gradient-to-br from-background to-muted/20 shadow-sm hover:shadow-md transition-all">
@@ -62,35 +65,21 @@ export function PerformanceBenchmarks() {
 
   const { portfolio, benchmarks } = data;
 
-  // Merge portfolio + selected benchmarks เพื่อ plot พร้อมกัน
-  const merged: MergedPerformancePoint[] = (() => {
-    // เตรียม map เก็บค่าล่าสุดของแต่ละ benchmark
-    const lastSeen: Record<string, number> = {};
-
-    return portfolio.map((p) => {
-      const entry: MergedPerformancePoint = {
-        date: p.date,
-        portfolio: p.value,
-      };
-
-      for (const b of benchmarks) {
-        // หา data ใน benchmark ที่ตรงกับวัน portfolio
-        const match = b.data.find((x) => x.date === p.date);
-        if (match) {
-          entry[b.name] = match.value;
-          lastSeen[b.name] = match.value;
-        } else if (lastSeen[b.name] !== undefined) {
-          // ไม่มีข้อมูลวันนั้น → ใช้ค่าก่อนหน้าแทน
-          entry[b.name] = lastSeen[b.name];
-        } else {
-          // ยังไม่มีค่าเลย → เริ่มต้นที่ 0
-          entry[b.name] = 0;
-        }
-      }
-
-      return entry;
-    });
-  })();
+  // Merge portfolio + benchmarks
+  const lastSeen: Record<string, number> = {};
+  const merged: MergedPerformancePoint[] = portfolio.map((p) => {
+    const entry: MergedPerformancePoint = { date: p.date, portfolio: p.value };
+    for (const b of benchmarks) {
+      const match = b.data.find((x) => x.date === p.date);
+      if (match) {
+        entry[b.name] = match.value;
+        lastSeen[b.name] = match.value;
+      } else if (lastSeen[b.name] !== undefined) {
+        entry[b.name] = lastSeen[b.name];
+      } else entry[b.name] = 0;
+    }
+    return entry;
+  });
 
   const ranges: { key: RangeType; label: string }[] = [
     { key: "day", label: "1D" },
@@ -113,23 +102,27 @@ export function PerformanceBenchmarks() {
   };
 
   return (
-    <Card className="border-none bg-gradient-to-br from-background to-muted/20 shadow-sm hover:shadow-md transition-all">
+    <Card className="border-none bg-gradient-to-br from-background/80 to-muted/30 shadow-lg hover:shadow-xl transition-all">
       <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <CardTitle className="text-lg font-semibold">
-          Portfolio vs Benchmarks (% Growth)
+        <CardTitle className="text-lg font-semibold tracking-tight">
+          Portfolio vs Benchmarks
+          <span className="text-muted-foreground text-sm font-normal ml-2">
+            (% Growth from First Investment)
+          </span>
         </CardTitle>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1">
           {ranges.map((r) => (
             <Button
               key={r.key}
               size="sm"
               variant={range === r.key ? "default" : "ghost"}
-              className={`rounded-full ${
+              className={cn(
+                "rounded-full px-3",
                 range === r.key
                   ? "bg-green-600 text-white hover:bg-green-700"
                   : "text-muted-foreground"
-              }`}
+              )}
               onClick={() => setRange(r.key)}
             >
               {r.label}
@@ -139,7 +132,8 @@ export function PerformanceBenchmarks() {
       </CardHeader>
 
       <CardContent>
-        <div className="flex gap-2 flex-wrap mb-4">
+        {/* Benchmark toggles */}
+        <div className="flex flex-wrap gap-2 mb-4">
           {benchmarksList.map((b) => (
             <Button
               key={b.key}
@@ -154,6 +148,7 @@ export function PerformanceBenchmarks() {
                   ? b.color
                   : "transparent",
               }}
+              className="transition-all hover:scale-105"
               onClick={() => toggleBenchmark(b.key)}
             >
               {b.label}
@@ -161,64 +156,61 @@ export function PerformanceBenchmarks() {
           ))}
         </div>
 
-        <div className="h-[300px] w-full flex justify-center items-center">
-          <LineChart
-            data={merged}
-            width={900}
-            height={300}
-            margin={{ top: 20, right: 30, left: 0, bottom: 10 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="date"
-              tick={{ fontSize: 12, fill: "#6b7280" }}
-              tickFormatter={(v) =>
-                new Date(v).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })
-              }
-            />
-            <YAxis
-              tick={{ fontSize: 12, fill: "#6b7280" }}
-              tickFormatter={(v) => `${v.toFixed(0)}%`}
-            />
-            <Tooltip
-              formatter={(v: number) => `${v.toFixed(2)}%`}
-              labelFormatter={(v) =>
-                new Date(v).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })
-              }
-            />
-            <Legend />
+        {/* Chart */}
+        <div className="h-[350px] w-full">
+          <ResponsiveContainer>
+            <LineChart
+              data={merged}
+              margin={{ top: 20, right: 30, left: 0, bottom: 10 }}
+              className="px-20"
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 12, fill: "#6b7280" }}
+                tickFormatter={(v) =>
+                  new Date(v).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })
+                }
+              />
+              <YAxis
+                tick={{ fontSize: 12, fill: "#6b7280" }}
+                tickFormatter={(v) => `${v.toFixed(0)}%`}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              
+              <Legend wrapperStyle={{ fontSize: 12 }} />
 
-            {/* Portfolio Line */}
-            <Line
-              type="monotone"
-              dataKey="portfolio"
-              stroke="#16a34a"
-              strokeWidth={2.5}
-              dot={false}
-              name="Portfolio"
-            />
+              {/* Portfolio line */}
+              <Line
+                type="monotone"
+                dataKey="portfolio"
+                stroke="#16a34a"
+                strokeWidth={2.5}
+                dot={false}
+                name="Portfolio"
+                activeDot={{ r: 5 }}
+              />
 
-            {/* Dynamic Benchmarks */}
-            {benchmarksList
-              .filter((b) => selectedBenchmarks.includes(b.key))
-              .map((b) => (
-                <Line
-                  key={b.key}
-                  type="monotone"
-                  dataKey={b.key}
-                  stroke={b.color}
-                  strokeWidth={1.8}
-                  dot={false}
-                  name={b.label}
-                />
-              ))}
-          </LineChart>
+              {/* Benchmarks */}
+              {benchmarksList
+                .filter((b) => selectedBenchmarks.includes(b.key))
+                .map((b) => (
+                  <Line
+                    key={b.key}
+                    type="monotone"
+                    dataKey={b.key}
+                    stroke={b.color}
+                    strokeWidth={2}
+                    dot={false}
+                    name={b.label}
+                    strokeOpacity={0.85}
+                  />
+                ))}
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </CardContent>
     </Card>

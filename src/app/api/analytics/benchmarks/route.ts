@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import YahooFinance from "yahoo-finance2";
 
-// สัญลักษณ์ดัชนีที่ใช้เปรียบเทียบ
+// ดัชนีที่ใช้เปรียบเทียบ
 const BENCHMARKS = {
   sp500: "^GSPC",
   nasdaq: "^NDX",
@@ -11,15 +11,13 @@ const BENCHMARKS = {
   gold: "GC=F",
 };
 
-// Normalize ให้เป็น % การเติบโตจากวันที่เริ่มลงทุนจริง
+// Normalize series เป็น % การเติบโตจากวันเริ่มลงทุน
 function normalizeSeries(series: { date: string; value: number }[]) {
   if (!series.length) return [];
 
-  // หาวันแรกที่เริ่มมีมูลค่าจริง (ไม่ใช่ 0)
   const firstValidIndex = series.findIndex((s) => s.value > 0);
-  if (firstValidIndex === -1) {
+  if (firstValidIndex === -1)
     return series.map((p) => ({ date: p.date, value: 0 }));
-  }
 
   const base = series[firstValidIndex].value;
 
@@ -30,14 +28,14 @@ function normalizeSeries(series: { date: string; value: number }[]) {
   });
 }
 
-// ฟังก์ชันกำหนดช่วงเวลา
-function getDateRange(range: string) {
+// กำหนดช่วงเวลา พร้อมรองรับ firstTxDate
+function getDateRange(range: string, firstTxDate: Date) {
   const end = new Date();
   const start = new Date();
 
   switch (range) {
     case "day":
-      start.setDate(end.getDate() - 1);
+      start.setDate(end.getDate() - 2);
       break;
     case "month":
       start.setMonth(end.getMonth() - 1);
@@ -47,25 +45,29 @@ function getDateRange(range: string) {
       break;
     case "max":
     default:
-      start.setFullYear(end.getFullYear() - 5);
+      // max → ใช้วันลงทุนแรกแทนการลบ 5 ปี
+      start.setTime(firstTxDate.getTime());
       break;
   }
+
+  // ถ้า start ก่อนวันลงทุนแรก → ใช้วันนั้นแทน
+  if (start < firstTxDate) start.setTime(firstTxDate.getTime());
 
   return { start, end };
 }
 
-// Main API
 export async function GET(req: Request) {
   const yahooFinance = new YahooFinance({ suppressNotices: ["ripHistorical"] });
   const session = await auth();
+
   if (!session?.user?.id)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  // อ่าน range จาก query
   const { searchParams } = new URL(req.url);
   const range = searchParams.get("range") || "month";
-  const { start, end } = getDateRange(range);
 
-  // ดึงธุรกรรมของผู้ใช้ทั้งหมด
+  // ดึงธุรกรรมทั้งหมด
   const transactions = await prisma.transaction.findMany({
     where: { userId: session.user.id },
     orderBy: { date: "asc" },
@@ -74,14 +76,16 @@ export async function GET(req: Request) {
   if (!transactions.length)
     return NextResponse.json({ portfolio: [], benchmarks: [] });
 
-  // ปรับ startDate ให้ไม่ก่อนหน้าการลงทุนจริง
+  // หาวันลงทุนแรกจริง
   const firstTxDate = new Date(transactions[0].date);
-  if (start < firstTxDate) start.setTime(firstTxDate.getTime());
+
+  // ใช้วันนั้นใน getDateRange
+  const { start, end } = getDateRange(range, firstTxDate);
 
   // สร้าง symbol list
   const symbols = [...new Set(transactions.map((t) => t.symbol.toUpperCase()))];
 
-  // ดึงราคาย้อนหลังจาก Yahoo (historical)
+  // ดึงราคาย้อนหลังของแต่ละ symbol
   const historicalData = await Promise.all(
     symbols.map(async (s) => {
       const mapped = s === "BTC" ? "BTC-USD" : s === "ETH" ? "ETH-USD" : s;
@@ -98,7 +102,7 @@ export async function GET(req: Request) {
     })
   );
 
-  // คำนวณมูลค่าพอร์ตในแต่ละวัน
+  // รวมมูลค่าพอร์ตแต่ละวัน
   const portfolioTimeline: Record<string, number> = {};
 
   for (const { symbol, data } of historicalData) {
@@ -107,24 +111,26 @@ export async function GET(req: Request) {
       const txBefore = transactions.filter(
         (t) => t.symbol.toUpperCase() === symbol && t.date <= point.date
       );
+
       const quantity = txBefore.reduce(
         (sum, t) => sum + (t.type === "BUY" ? t.quantity : -t.quantity),
         0
       );
+
       const totalValue = quantity * (point.close ?? 0);
       portfolioTimeline[dateStr] =
         (portfolioTimeline[dateStr] || 0) + totalValue;
     }
   }
 
-  // เรียงวัน + normalize ให้เป็น % การเติบโตจริง
+  // เรียงวัน + normalize
   const portfolioSeries = Object.entries(portfolioTimeline)
     .map(([date, value]) => ({ date, value }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const portfolioNormalized = normalizeSeries(portfolioSeries);
 
-  // ดึง benchmark มาทำ normalize ด้วยวิธีเดียวกัน
+  // ดึง benchmark หลักทั้งหมด
   const benchmarks = await Promise.all(
     Object.entries(BENCHMARKS).map(async ([key, symbol]) => {
       try {
@@ -146,7 +152,7 @@ export async function GET(req: Request) {
     })
   );
 
-  // Align วันให้ตรงกันกับ portfolio
+  // Align วันให้ตรงกับ portfolio
   const alignedDates = portfolioNormalized.map((p) => p.date);
   const alignedBenchmarks = benchmarks.map((b) => ({
     name: b.name,
