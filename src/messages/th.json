@@ -1,0 +1,10 @@
+{
+  "Navbar": {
+    "signOut": "ออกจากระบบ"
+  },
+  "Sidebar": {
+    "overview": "ภาพรวม",
+    "transactions": "ธุรกรรม",
+    "analytics": "การวิเคราะห์"
+  }
+}
