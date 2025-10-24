@@ -14,12 +14,14 @@ import {
 import { TransactionDialog } from "./transaction-dialog";
 import { TransactionTable } from "./transaction-table";
 import { TransactionSummary } from "./transaction-summary";
+import { useTranslations } from "next-intl";
 
 export function TransactionFilters() {
   const { data, isLoading } = useSWR<Transaction[]>("/api/transactions");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [type, setType] = useState("all");
+  const t = useTranslations('transactions.filters');
 
   const filtered = useMemo(() => {
     if (!data) return [];
@@ -43,7 +45,7 @@ export function TransactionFilters() {
         {/* Search box */}
         <div className="flex items-center gap-3">
           <Input
-            placeholder="Search by name or symbol..."
+            placeholder={t('searchPlaceholder')}
             className="w-64 bg-background border-muted/40 focus:ring-1 focus:ring-primary"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -52,14 +54,14 @@ export function TransactionFilters() {
           {/* Category select */}
           <Select defaultValue="all" onValueChange={setCategory}>
             <SelectTrigger className="w-44 bg-background border-muted/40">
-              <SelectValue placeholder="Asset Type" />
+              <SelectValue placeholder={t('categoryPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="STOCK">Stocks</SelectItem>
-              <SelectItem value="ETF">ETFs</SelectItem>
-              <SelectItem value="CRYPTO">Crypto</SelectItem>
-              <SelectItem value="GOLD">Gold</SelectItem>
+              <SelectItem value="all">{t('all')}</SelectItem>
+              <SelectItem value="STOCK">{t('categories.STOCK')}</SelectItem>
+              <SelectItem value="ETF">{t('categories.ETF')}</SelectItem>
+              <SelectItem value="CRYPTO">{t('categories.CRYPTO')}</SelectItem>
+              <SelectItem value="GOLD">{t('categories.GOLD')}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -69,9 +71,9 @@ export function TransactionFilters() {
               <SelectValue placeholder="Transaction Type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="BUY">Buy</SelectItem>
-              <SelectItem value="SELL">Sell</SelectItem>
+              <SelectItem value="all">{t('all')}</SelectItem>
+              <SelectItem value="BUY">{t('types.BUY')}</SelectItem>
+              <SelectItem value="SELL">{t('types.SELL')}</SelectItem>
             </SelectContent>
           </Select>
         </div>

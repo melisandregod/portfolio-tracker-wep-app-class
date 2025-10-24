@@ -12,6 +12,7 @@ import {
 import { ArrowUpRight, ArrowDownRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { usePagination } from "@/hooks/use-pagination"
+import { useTranslations } from "next-intl"
 
 type Holding = {
   symbol: string
@@ -22,6 +23,7 @@ type Holding = {
 }
 
 export function TopHoldingsTable({ data }: { data: Holding[] }) {
+  const t = useTranslations("overview.holdings")
   const { page, setPage, totalPages, paginatedData, startIdx, endIdx } =
     usePagination(data, 6) // แสดงหน้า 5 แถวต่อหน้า
 
@@ -30,11 +32,11 @@ export function TopHoldingsTable({ data }: { data: Holding[] }) {
       <Card className="border-none bg-muted/30 text-center py-12">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-muted-foreground">
-            Top Holdings
+            {t('title')}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-muted-foreground">
-          No holdings data available.
+          {t('noData')}
         </CardContent>
       </Card>
     )
@@ -43,7 +45,7 @@ export function TopHoldingsTable({ data }: { data: Holding[] }) {
     <Card className="border-none bg-gradient-to-br from-background to-muted/20 shadow-sm hover:shadow-md transition-all">
       <CardHeader className="flex justify-between items-center pb-2">
         <CardTitle className="text-lg font-semibold text-foreground">
-          Top Holdings
+          {t('title')}
         </CardTitle>
       </CardHeader>
 
@@ -53,19 +55,19 @@ export function TopHoldingsTable({ data }: { data: Holding[] }) {
             <TableHeader>
               <TableRow className="bg-muted/40">
                 <TableHead className="text-left font-semibold text-foreground">
-                  Asset
+                  {t('headers.asset')}
                 </TableHead>
                 <TableHead className="text-left font-semibold text-foreground">
-                  Type
+                  {t('headers.type')}
                 </TableHead>
                 <TableHead className="text-right font-semibold text-foreground">
-                  Value
+                  {t('headers.value')}
                 </TableHead>
                 <TableHead className="text-right font-semibold text-foreground">
-                  Gain / Loss
+                  {t('headers.gain')}
                 </TableHead>
                 <TableHead className="text-right font-semibold text-foreground">
-                  Allocation
+                  {t('headers.allocation')}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -135,7 +137,7 @@ export function TopHoldingsTable({ data }: { data: Holding[] }) {
               onClick={() => setPage(page - 1)}
               disabled={page === 1}
             >
-              Previous
+              {t('pagination.previous')}
             </Button>
 
             {/* ตัวเลขหน้า */}
@@ -156,7 +158,7 @@ export function TopHoldingsTable({ data }: { data: Holding[] }) {
               onClick={() => setPage(page + 1)}
               disabled={page === totalPages}
             >
-              Next
+              {t('pagination.next')}
             </Button>
           </div>
         </div>

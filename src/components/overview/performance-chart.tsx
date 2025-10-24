@@ -7,16 +7,11 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from "recharts";
+import { AreaChart, Area, XAxis, YAxis, Tooltip } from "recharts";
 import { Button } from "@/components/ui/button";
 import { PerformancePoint } from "@/types/overview";
 import { Skeleton } from "../ui/skeleton";
+import { useTranslations } from "next-intl";
 
 interface Props {
   data?: PerformancePoint[];
@@ -26,19 +21,18 @@ interface Props {
 }
 
 export function PerformanceChart({ data, isLoading, range, setRange }: Props) {
+  const t = useTranslations("overview.performance");
   const ranges: { key: typeof range; label: string }[] = [
-    { key: "day", label: "1D" },
-    { key: "month", label: "1M" },
-    { key: "year", label: "1Y" },
-    { key: "max", label: "MAX" },
+    { key: "day", label: t("ranges.day") },
+    { key: "month", label: t("ranges.month") },
+    { key: "year", label: t("ranges.year") },
+    { key: "max", label: t("ranges.max") },
   ];
 
   return (
     <Card className="border-none bg-gradient-to-br from-background to-muted/20 shadow-sm hover:shadow-md transition-all">
       <CardHeader className="flex justify-between items-center">
-        <CardTitle className="text-lg font-semibold">
-          Portfolio Performance
-        </CardTitle>
+        <CardTitle className="text-lg font-semibold">{t("title")}</CardTitle>
         <div className="flex gap-1">
           {ranges.map((r) => (
             <Button
@@ -89,7 +83,6 @@ export function PerformanceChart({ data, isLoading, range, setRange }: Props) {
 
                 <XAxis
                   dataKey="date"
-                   
                   tickLine={false}
                   axisLine={false}
                   tick={{ fontSize: 12, fill: "#6b7280" }}
@@ -101,7 +94,6 @@ export function PerformanceChart({ data, isLoading, range, setRange }: Props) {
                       day: "numeric",
                     });
                   }}
-                  
                 />
                 <YAxis
                   tickLine={false}

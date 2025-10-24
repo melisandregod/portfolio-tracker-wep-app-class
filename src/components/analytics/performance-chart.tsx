@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { CustomTooltip } from "./custom-tool-tip";
+import { useTranslations } from "next-intl";
 
 // Types
 interface PerformanceCompareResponse {
@@ -39,6 +40,7 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export function PerformanceBenchmarks() {
   type RangeType = "day" | "month" | "year" | "max";
+  const tr = useTranslations('analytics.benchmarks');
   const [range, setRange] = useState<RangeType>("year");
   const [selectedBenchmarks, setSelectedBenchmarks] = useState<string[]>([
     "sp500",
@@ -54,7 +56,7 @@ export function PerformanceBenchmarks() {
     return (
       <Card className="border-none bg-gradient-to-br from-background to-muted/20 shadow-sm hover:shadow-md transition-all">
         <CardHeader>
-          <CardTitle>Portfolio vs Benchmarks (% Growth)</CardTitle>
+          <CardTitle>{tr('title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-[300px] rounded-xl" />
@@ -82,17 +84,17 @@ export function PerformanceBenchmarks() {
   });
 
   const ranges: { key: RangeType; label: string }[] = [
-    { key: "day", label: "1D" },
-    { key: "month", label: "1M" },
-    { key: "year", label: "1Y" },
-    { key: "max", label: "MAX" },
+    { key: "day", label: tr('ranges.day')},
+    { key: "month", label: tr('ranges.month') },
+    { key: "year", label: tr('ranges.year') },
+    { key: "max", label: tr('ranges.max') },
   ];
 
   const benchmarksList = [
-    { key: "sp500", label: "S&P 500", color: "#3b82f6" },
-    { key: "nasdaq", label: "NASDAQ 100", color: "#a855f7" },
-    { key: "btc", label: "Bitcoin", color: "#f59e0b" },
-    { key: "gold", label: "Gold", color: "#eab308" },
+    { key: "sp500", label: tr('series.sp500'), color: "#3b82f6" },
+    { key: "nasdaq", label: tr('series.nasdaq'), color: "#a855f7" },
+    { key: "btc", label: tr('series.btc'), color: "#f59e0b" },
+    { key: "gold", label: tr('series.gold'), color: "#eab308" },
   ];
 
   const toggleBenchmark = (key: string) => {
@@ -105,9 +107,9 @@ export function PerformanceBenchmarks() {
     <Card className="border-none bg-gradient-to-br from-background/80 to-muted/30 shadow-lg hover:shadow-xl transition-all">
       <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <CardTitle className="text-lg font-semibold tracking-tight">
-          Portfolio vs Benchmarks
+          {tr('title')}
           <span className="text-muted-foreground text-sm font-normal ml-2">
-            (% Growth from First Investment)
+          ({tr('subtitle')})
           </span>
         </CardTitle>
 

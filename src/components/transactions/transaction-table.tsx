@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { TransactionTableSkeleton } from "../ui/transactions/TransactionTableSkeleton";
 import { usePagination } from "@/hooks/use-pagination";
+import { useTranslations } from "next-intl";
 
 type Props = {
   data?: Transaction[];
@@ -39,6 +40,7 @@ export function TransactionTable({
   loading = false,
   pageSize = 8,
 }: Props) {
+  const tr = useTranslations('transactions.table')
   const [targetId, setTargetId] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -67,11 +69,11 @@ export function TransactionTable({
       <Card className="border-none bg-gradient-to-br from-background to-muted/20 text-center py-8">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-muted-foreground">
-            All Transactions
+            {tr('title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No transactions found.</p>
+          <p className="text-sm text-muted-foreground">{tr('noData')}</p>
         </CardContent>
       </Card>
     );
@@ -80,7 +82,7 @@ export function TransactionTable({
     <Card className="border-none bg-gradient-to-br from-background to-muted/10 shadow-sm hover:shadow-md transition-all">
       <CardHeader className="flex justify-between items-center pb-2">
         <CardTitle className="text-lg font-semibold text-foreground">
-          All Transactions
+          {tr('title')}
         </CardTitle>
       </CardHeader>
 
@@ -89,14 +91,14 @@ export function TransactionTable({
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30">
-                <TableHead>Date</TableHead>
-                <TableHead>Symbol</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">Qty</TableHead>
-                <TableHead className="text-right">Price</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-center">Actions</TableHead>
+                <TableHead>{tr('headers.date')}</TableHead>
+                <TableHead>{tr('headers.symbol')}</TableHead>
+                <TableHead>{tr('headers.type')}</TableHead>
+                <TableHead>{tr('headers.category')}</TableHead>
+                <TableHead className="text-right">{tr('headers.qty')}</TableHead>
+                <TableHead className="text-right">{tr('headers.price')}</TableHead>
+                <TableHead className="text-right">{tr('headers.total')}</TableHead>
+                <TableHead className="text-center">{tr('headers.actions')}</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -162,21 +164,20 @@ export function TransactionTable({
                             Delete {t.symbol} ({t.type}) transaction?
                           </AlertDialogTitle>
                           <AlertDialogDescription>
-                            This action cannot be undone. It will permanently
-                            remove this transaction.
+                            {tr('delete.description')}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel onClick={() => setTargetId(null)}>
-                            Cancel
+                            {tr('delete.cancel')}
                           </AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => handleDelete(t.id)}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           >
                             {isDeleting && targetId === t.id
-                              ? "Deleting..."
-                              : "Delete"}
+                              ? tr('delete.deleting')
+                              : tr('delete.confirm')}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -203,7 +204,7 @@ export function TransactionTable({
               disabled={page === 1}
               className="transition-all"
             >
-              Prev
+              {tr('pagination.prev')}
             </Button>
             <span className="text-sm text-muted-foreground">
               Page <span className="font-semibold text-foreground">{page}</span>{" "}
@@ -216,7 +217,7 @@ export function TransactionTable({
               disabled={page === totalPages}
               className="transition-all"
             >
-              Next
+              {tr('pagination.next')}
             </Button>
           </div>
         </div>
