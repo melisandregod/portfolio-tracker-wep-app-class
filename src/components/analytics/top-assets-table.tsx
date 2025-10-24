@@ -9,6 +9,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type Asset = { asset: string; gain: string; value: string };
 
@@ -19,11 +20,12 @@ export function TopAssetsTable({
   top: Asset[];
   worst: Asset[];
 }) {
+  const tr = useTranslations("analytics.topAssets");
   return (
     <Card className="border-none bg-gradient-to-br from-background/80 to-muted/30 shadow-lg hover:shadow-xl transition-all">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold tracking-tight">
-          Top / Worst Performing Assets
+          {tr('title')}
         </CardTitle>
       </CardHeader>
 
@@ -31,15 +33,15 @@ export function TopAssetsTable({
         {/* 🟢 Top Performers */}
         <div>
           <h3 className="flex items-center gap-2 font-semibold mb-3 text-green-600">
-            <ArrowUpRight className="w-4 h-4" /> Top Performers
+            <ArrowUpRight className="w-4 h-4" /> {tr('topTitle')}
           </h3>
           <Table>
             <TableHeader>
               <TableRow className="border-muted">
                 <TableHead className="w-10 text-muted-foreground">#</TableHead>
-                <TableHead>Asset</TableHead>
-                <TableHead className="text-right">Gain</TableHead>
-                <TableHead className="text-right">Value</TableHead>
+                <TableHead>{tr('headers.asset')}</TableHead>
+                <TableHead className="text-right">{tr('headers.gain')}</TableHead>
+                <TableHead className="text-right">{tr('headers.value')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -63,8 +65,11 @@ export function TopAssetsTable({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-sm text-muted-foreground py-4">
-                    No data available
+                  <TableCell
+                    colSpan={4}
+                    className="text-center text-sm text-muted-foreground py-4"
+                  >
+                    {tr('noData')}
                   </TableCell>
                 </TableRow>
               )}
@@ -75,15 +80,15 @@ export function TopAssetsTable({
         {/* 🔴 Worst Performers */}
         <div>
           <h3 className="flex items-center gap-2 font-semibold mb-3 text-red-600">
-            <ArrowDownRight className="w-4 h-4" /> Worst Performers
+            <ArrowDownRight className="w-4 h-4" /> {tr('worstTitle')}
           </h3>
           <Table>
             <TableHeader>
               <TableRow className="border-muted">
                 <TableHead className="w-10 text-muted-foreground">#</TableHead>
-                <TableHead>Asset</TableHead>
-                <TableHead className="text-right">Loss</TableHead>
-                <TableHead className="text-right">Value</TableHead>
+                <TableHead>{tr('headers.asset')}</TableHead>
+                <TableHead className="text-right">{tr('headers.loss')}</TableHead>
+                <TableHead className="text-right">{tr('headers.value')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -107,8 +112,11 @@ export function TopAssetsTable({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-sm text-muted-foreground py-4">
-                    No data available
+                  <TableCell
+                    colSpan={4}
+                    className="text-center text-sm text-muted-foreground py-4"
+                  >
+                    {tr('noData')}
                   </TableCell>
                 </TableRow>
               )}

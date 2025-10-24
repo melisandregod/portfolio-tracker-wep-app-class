@@ -4,10 +4,11 @@ import useSWR from "swr"
 import type { Transaction } from "@/types/transaction"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useTranslations } from "next-intl"
 
 export function TransactionSummary() {
   const { data, error, isLoading } = useSWR<Transaction[]>("/api/transactions")
-
+  const t = useTranslations('transactions.summary');
   if (isLoading)
     return (
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -32,7 +33,7 @@ export function TransactionSummary() {
   if (error || !data)
     return (
       <p className="text-sm text-destructive">
-        Failed to load summary data. Please try again later.
+        {t('error')}
       </p>
     )
 
@@ -54,7 +55,7 @@ export function TransactionSummary() {
       <Card className="border-none bg-gradient-to-br from-emerald-500/10 via-background to-background shadow-sm hover:shadow-md transition-all">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Total Buy
+            {t('totalBuy')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -68,7 +69,7 @@ export function TransactionSummary() {
       <Card className="border-none bg-gradient-to-br from-sky-500/10 via-background to-background shadow-sm hover:shadow-md transition-all">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Total Sell
+            {t('totalSell')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -82,7 +83,7 @@ export function TransactionSummary() {
       <Card className="border-none bg-gradient-to-br from-background to-muted/20 shadow-sm hover:shadow-md transition-all">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Net Profit / Loss
+            {t('net')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -103,10 +104,10 @@ export function TransactionSummary() {
           </p>
           <p className="text-xs mt-1 text-muted-foreground">
             {net > 0
-              ? "Profit"
+              ? t('profit')
               : net < 0
-              ? "Loss"
-              : "No realized gains yet"}
+              ? t('loss')
+              : t('noGains')}
           </p>
         </CardContent>
       </Card>

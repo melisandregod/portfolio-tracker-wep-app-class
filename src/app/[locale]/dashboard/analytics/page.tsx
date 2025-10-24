@@ -7,18 +7,19 @@ import { PerformanceMetrics } from "@/components/analytics/performance-metrics";
 import { ProjectionChart } from "@/components/analytics/projection-chart";
 import { TopAssetsTable } from "@/components/analytics/top-assets-table";
 import { PerformanceBenchmarks } from "@/components/analytics/performance-chart";
+import { useTranslations } from "next-intl";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function AnalyticsPage() {
   const { data, error, isLoading } = useSWR("/api/analytics", fetcher);
-
+  const tr = useTranslations('analytics');
   // Skeleton Loading Layout
   if (isLoading) {
     return (
       <div className="flex flex-col gap-8 p-6 animate-pulse">
         <h1 className="text-2xl font-semibold tracking-tight text-muted-foreground">
-          Portfolio Analytics
+          {tr('title')}
         </h1>
 
         {/* Metrics Skeleton */}
@@ -60,7 +61,7 @@ export default function AnalyticsPage() {
   if (error || !data)
     return (
       <Card className="m-6 text-center border-none bg-muted/30 py-12">
-        <CardContent>Failed to load analytics data.</CardContent>
+        <CardContent>{tr('error')}</CardContent>
       </Card>
     );
     if (
@@ -72,9 +73,9 @@ export default function AnalyticsPage() {
     return (
       <Card className="m-6 text-center border-none bg-muted/30 py-16">
         <CardContent className="space-y-2">
-          <h2 className="text-lg font-semibold">No portfolio data yet</h2>
+          <h2 className="text-lg font-semibold">{tr('noData.title')}</h2>
           <p className="text-sm text-muted-foreground">
-            Add some transactions to see your performance analytics here.
+            {tr('noData.desc')}
           </p>
         </CardContent>
       </Card>
@@ -87,7 +88,7 @@ export default function AnalyticsPage() {
   return (
     <div className="flex flex-col gap-8 p-6">
       <h1 className="text-2xl font-semibold tracking-tight">
-        Portfolio Analytics
+        {tr('title')}
       </h1>
 
       <PerformanceMetrics data={metrics} />

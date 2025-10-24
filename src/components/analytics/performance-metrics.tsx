@@ -1,10 +1,12 @@
 "use client";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Activity } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type Metrics = { cagr: number; sharpe: number; drawdown: number };
 
 export function PerformanceMetrics({ data }: { data: Metrics }) {
+  const tr = useTranslations('analytics.metrics');
   const formatPercent = (v: number) =>
     `${(v * 100).toFixed(2)}%`;
 
@@ -14,7 +16,7 @@ export function PerformanceMetrics({ data }: { data: Metrics }) {
 
   const metricCards = [
     {
-      title: "CAGR",
+      title: tr('cagr'),
       value: formatPercent(data.cagr),
       color: cagrColor,
       icon: isPositive ? (
@@ -22,19 +24,19 @@ export function PerformanceMetrics({ data }: { data: Metrics }) {
       ) : (
         <TrendingDown className="w-5 h-5 text-red-500" />
       ),
-      subtext: "Compound Annual Growth Rate",
+      subtext: tr('cagrSub'),
       bg: "from-emerald-50 to-emerald-100/50 dark:from-emerald-950/40 dark:to-emerald-900/30",
     },
     {
-      title: "Sharpe Ratio",
+      title: tr('sharpe'),
       value: data.sharpe.toFixed(2),
       color: "text-blue-600",
       icon: <Activity className="w-5 h-5 text-blue-600" />,
-      subtext: "Risk-adjusted return indicator",
+      subtext: tr('sharpeSub'),
       bg: "from-blue-50 to-blue-100/40 dark:from-blue-950/40 dark:to-blue-900/30",
     },
     {
-      title: "Max Drawdown",
+      title: tr('drawdown'),
       value: formatPercent(data.drawdown),
       color: ddColor,
       icon:
@@ -43,7 +45,7 @@ export function PerformanceMetrics({ data }: { data: Metrics }) {
         ) : (
           <TrendingUp className="w-5 h-5 text-emerald-600" />
         ),
-      subtext: "Largest portfolio decline from peak",
+      subtext: tr('drawdownSub'),
       bg: "from-rose-50 to-rose-100/40 dark:from-rose-950/40 dark:to-rose-900/30",
     },
   ];

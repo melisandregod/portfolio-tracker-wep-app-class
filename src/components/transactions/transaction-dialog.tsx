@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,22 +9,33 @@ import {
   DialogTitle,
   DialogDescription,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
-import { CalendarIcon } from "lucide-react"
-import { format } from "date-fns"
-import { cn } from "@/lib/utils"
-import type { CreateTransactionInput } from "@/types/transaction"
-import { mutate } from "swr"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import type { CreateTransactionInput } from "@/types/transaction";
+import { mutate } from "swr";
+import { useTranslations } from "next-intl";
 
 export function TransactionDialog() {
-  const [open, setOpen] = useState(false)
-  const [date, setDate] = useState<Date | undefined>(new Date())
-
+  const [open, setOpen] = useState(false);
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const t = useTranslations("transactions.dialog");
   const [form, setForm] = useState<CreateTransactionInput>({
     symbol: "",
     name: "",
@@ -34,46 +45,49 @@ export function TransactionDialog() {
     price: 0,
     fee: null,
     note: "",
-  })
+  });
 
-  const handleChange = (key: keyof CreateTransactionInput, value: string | number) => {
-    setForm((prev) => ({ ...prev, [key]: value }))
-  }
+  const handleChange = (
+    key: keyof CreateTransactionInput,
+    value: string | number
+  ) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
       const res = await fetch("/api/transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, date }),
-      })
-      if (!res.ok) throw new Error("Failed to save transaction")
-      setOpen(false)
-      mutate("/api/transactions") 
+      });
+      if (!res.ok) throw new Error("Failed to save transaction");
+      setOpen(false);
+      mutate("/api/transactions");
     } catch (err) {
-      console.error(err)
-      alert("Error saving transaction")
+      console.error(err);
+      alert(t('errors.saveFailed'));
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-fit cursor-pointer">Add Transaction</Button>
+        <Button className="w-fit cursor-pointer">{t('title')}</Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add Transaction</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
-            Fill in the details to add a new transaction.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-2">
-            <Label htmlFor="symbol">Symbol</Label>
+            <Label htmlFor="symbol">{t('symbol')}</Label>
             <Input
               id="symbol"
               placeholder="e.g. NVDA, BTC"
@@ -84,7 +98,7 @@ export function TransactionDialog() {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t('name')}</Label>
             <Input
               id="name"
               placeholder="Full name (optional)"
@@ -94,7 +108,7 @@ export function TransactionDialog() {
           </div>
 
           <div className="grid gap-2">
-            <Label>Category</Label>
+            <Label>{t('category')}</Label>
             <Select
               defaultValue={form.category}
               onValueChange={(v) => handleChange("category", v.toUpperCase())}
@@ -103,16 +117,16 @@ export function TransactionDialog() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="stock">Stock</SelectItem>
-                <SelectItem value="etf">ETF</SelectItem>
-                <SelectItem value="crypto">Crypto</SelectItem>
-                <SelectItem value="gold">Gold</SelectItem>
+                <SelectItem value="stock">{t('categories.STOCK')}</SelectItem>
+                <SelectItem value="etf">{t('categories.ETF')}</SelectItem>
+                <SelectItem value="crypto">{t('categories.CRYPTO')}</SelectItem>
+                <SelectItem value="gold">{t('categories.GOLD')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="grid gap-2">
-            <Label>Transaction Type</Label>
+            <Label>{t('type')}</Label>
             <Select
               defaultValue={form.type}
               onValueChange={(v) => handleChange("type", v.toUpperCase())}
@@ -121,27 +135,29 @@ export function TransactionDialog() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="buy">Buy</SelectItem>
-                <SelectItem value="sell">Sell</SelectItem>
+                <SelectItem value="buy">{t('types.BUY')}</SelectItem>
+                <SelectItem value="sell">{t('types.SELL')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="quantity">Quantity</Label>
+              <Label htmlFor="quantity">{t('quantity')}</Label>
               <Input
                 id="quantity"
                 type="number"
                 min="0"
                 step="any"
                 value={form.quantity}
-                onChange={(e) => handleChange("quantity", Number(e.target.value))}
+                onChange={(e) =>
+                  handleChange("quantity", Number(e.target.value))
+                }
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="price">Price (USD)</Label>
+              <Label htmlFor="price">{t('price')}</Label>
               <Input
                 id="price"
                 type="number"
@@ -155,7 +171,7 @@ export function TransactionDialog() {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="fee">Fee (optional)</Label>
+            <Label htmlFor="fee">{t('fee')}</Label>
             <Input
               id="fee"
               type="number"
@@ -166,7 +182,7 @@ export function TransactionDialog() {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="note">Note (optional)</Label>
+            <Label htmlFor="note">{t('note')}</Label>
             <Input
               id="note"
               value={form.note ?? ""}
@@ -176,7 +192,7 @@ export function TransactionDialog() {
           </div>
 
           <div className="grid gap-2">
-            <Label>Date</Label>
+            <Label>{t('date')}</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -187,20 +203,25 @@ export function TransactionDialog() {
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : "Pick a date"}
+                  {date ? format(date, "PPP") : t('pickDate')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  initialFocus
+                />
               </PopoverContent>
             </Popover>
           </div>
 
           <div className="flex justify-end">
-            <Button type="submit">Save Transaction</Button>
+            <Button type="submit">{t('save')}</Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

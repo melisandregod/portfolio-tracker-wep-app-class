@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { ArrowUpRight, ArrowDownRight, DollarSign, TrendingUp, Wallet } from "lucide-react"
 
@@ -10,9 +11,9 @@ type SummaryData = {
 }
 
 export function PortfolioSummary({ data }: { data: SummaryData }) {
-  // คำนวณ gain/loss มูลค่าเงิน (USD)
-  const gainLossValue = data.totalValue - data.totalCost
+  const t = useTranslations("overview.summary")
 
+  const gainLossValue = data.totalValue - data.totalCost
   const isGain = gainLossValue > 0
   const isLoss = gainLossValue < 0
 
@@ -37,7 +38,7 @@ export function PortfolioSummary({ data }: { data: SummaryData }) {
         <CardHeader className="flex flex-row justify-between items-center">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <Wallet className="h-4 w-4 text-emerald-600" />
-            Total Portfolio Value
+            {t("totalValue")}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-3xl font-bold text-emerald-700 dark:text-emerald-400">
@@ -50,7 +51,7 @@ export function PortfolioSummary({ data }: { data: SummaryData }) {
         <CardHeader className="flex flex-row justify-between items-center">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             {gainIcon}
-            Total Gain / Loss
+            {t("gainLoss")}
           </CardTitle>
         </CardHeader>
         <CardContent className={`text-3xl font-bold ${gainColor}`}>
@@ -66,7 +67,7 @@ export function PortfolioSummary({ data }: { data: SummaryData }) {
         <CardHeader className="flex flex-row justify-between items-center">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <DollarSign className="h-4 w-4 text-indigo-600" />
-            Cost Basis
+            {t("costBasis")}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-3xl font-bold text-indigo-700 dark:text-indigo-400">

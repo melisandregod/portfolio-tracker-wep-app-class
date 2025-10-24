@@ -14,6 +14,7 @@ import { AssetAllocationChart } from "@/components/overview/asset-allocation-cha
 import { CategorySummaryTable } from "@/components/overview/category-summary-table";
 import { PerformanceChart } from "@/components/overview/performance-chart";
 import { TopHoldingsTable } from "@/components/overview/top-holdings-table";
+import { useTranslations } from "next-intl";
 
 export default function OverviewPage() {
   const [range, setRange] = useState<"day" | "month" | "year" | "max">("month");
@@ -32,6 +33,8 @@ export default function OverviewPage() {
     timeZone: "Asia/Bangkok",
     hour12: false,
   });
+
+  const t = useTranslations("overview");
 
   if (isLoading)
     return (
@@ -69,7 +72,7 @@ export default function OverviewPage() {
 
   if (error)
     return (
-      <div className="p-6 text-red-500">Failed to load overview data.</div>
+      <div className="p-6 text-red-500">{t("error")}</div>
     );
 
   if (!data) return null;
@@ -78,9 +81,9 @@ export default function OverviewPage() {
     <div className="flex flex-col gap-8 p-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Portfolio Overview</h1>
+        <h1 className="text-2xl font-semibold">{t("title")}</h1>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Last updated: {timestamp}</span>
+          <span>{t("lastUpdated")} {timestamp}</span>
           <button
             onClick={() => mutate()}
             className="text-muted-foreground hover:text-foreground transition cursor-pointer"

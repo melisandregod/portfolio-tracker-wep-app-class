@@ -6,5 +6,203 @@
     "overview": "Overview",
     "transactions": "Transactions",
     "analytics": "Analytics"
+  },
+  "login": {
+    "title": "Sign in to Portify",
+    "button": "Continue with Google",
+    "terms": {
+      "text": "By signing in, you agree to our Terms of Service and Privacy Policy."
+    }
+  },
+  "overview": {
+    "title": "Portfolio Overview",
+    "lastUpdated": "Last updated:",
+    "refresh": "Refresh",
+    "loading": "Loading overview data...",
+    "error": "Failed to load overview data.",
+    "summary": {
+      "totalValue": "Total Portfolio Value",
+      "gainLoss": "Total Gain / Loss",
+      "costBasis": "Cost Basis"
+    },
+    "allocation": {
+      "title": "Asset Allocation",
+      "noData": "No data available",
+      "labels": {
+        "CRYPTO": "Crypto",
+        "STOCK": "Stock",
+        "ETF": "ETF",
+        "GOLD": "Gold"
+      }
+    },
+    "categories": {
+      "title": "Category Summary",
+      "headers": {
+        "category": "Category",
+        "value": "Value",
+        "gain": "Gain / Loss"
+      }
+    },
+    "performance": {
+      "title": "Portfolio Performance",
+      "ranges": {
+        "day": "1D",
+        "month": "1M",
+        "year": "1Y",
+        "max": "MAX"
+      }
+    },
+    "holdings": {
+      "title": "Top Holdings",
+      "noData": "No holdings data available.",
+      "headers": {
+        "asset": "Asset",
+        "type": "Type",
+        "value": "Value",
+        "gain": "Gain / Loss",
+        "allocation": "Allocation"
+      },
+      "pagination": {
+        "showing": "Showing {start}–{end} of {total}",
+        "previous": "Previous",
+        "next": "Next"
+      }
+    }
+  },
+  "transactions": {
+    "title": "Transactions",
+    "filters": {
+      "searchPlaceholder": "Search by name or symbol...",
+      "categoryPlaceholder": "Asset Type",
+      "typePlaceholder": "Transaction Type",
+      "all": "All",
+      "categories": {
+        "STOCK": "Stocks",
+        "ETF": "ETFs",
+        "CRYPTO": "Crypto",
+        "GOLD": "Gold"
+      },
+      "types": {
+        "BUY": "Buy",
+        "SELL": "Sell"
+      },
+      "add": "Add Transaction"
+    },
+    "dialog": {
+      "title": "Add Transaction",
+      "description": "Fill in the details to add a new transaction.",
+      "symbol": "Symbol",
+      "name": "Name",
+      "category": "Category",
+      "type": "Transaction Type",
+      "quantity": "Quantity",
+      "price": "Price (USD)",
+      "fee": "Fee (optional)",
+      "note": "Note (optional)",
+      "date": "Date",
+      "pickDate": "Pick a date",
+      "save": "Save Transaction",
+      "errors": {
+        "saveFailed": "Error saving transaction"
+      },
+      "categories": {
+        "STOCK": "Stocks",
+        "ETF": "ETFs",
+        "CRYPTO": "Crypto",
+        "GOLD": "Gold"
+      },
+      "types": {
+        "BUY": "Buy",
+        "SELL": "Sell"
+      }
+    },
+    "summary": {
+      "totalBuy": "Total Buy",
+      "totalSell": "Total Sell",
+      "net": "Net Profit / Loss",
+      "profit": "Profit",
+      "loss": "Loss",
+      "noGains": "No realized gains yet",
+      "error": "Failed to load summary data. Please try again later."
+    },
+    "table": {
+      "title": "All Transactions",
+      "noData": "No transactions found.",
+      "headers": {
+        "date": "Date",
+        "symbol": "Symbol",
+        "type": "Type",
+        "category": "Category",
+        "qty": "Qty",
+        "price": "Price",
+        "total": "Total",
+        "actions": "Actions"
+      },
+      "pagination": {
+        "showing": "Showing {start}–{end} of {total} records",
+        "prev": "Prev",
+        "next": "Next",
+        "page": "Page {page} of {totalPages}"
+      },
+      "delete": {
+        "title": "Delete {symbol} ({type}) transaction?",
+        "description": "This action cannot be undone. It will permanently remove this transaction.",
+        "cancel": "Cancel",
+        "confirm": "Delete",
+        "deleting": "Deleting..."
+      }
+    }
+  },
+  "analytics": {
+    "title": "Portfolio Analytics",
+    "loading": "Loading analytics data...",
+    "error": "Failed to load analytics data.",
+    "noData": {
+      "title": "No portfolio data yet",
+      "desc": "Add some transactions to see your performance analytics here."
+    },
+    "metrics": {
+      "cagr": "CAGR",
+      "cagrSub": "Compound Annual Growth Rate",
+      "sharpe": "Sharpe Ratio",
+      "sharpeSub": "Risk-adjusted return indicator",
+      "drawdown": "Max Drawdown",
+      "drawdownSub": "Largest portfolio decline from peak"
+    },
+    "benchmarks": {
+      "title": "Portfolio vs Benchmarks",
+      "subtitle": "% Growth from First Investment",
+      "ranges": {
+        "day": "1D",
+        "month": "1M",
+        "year": "1Y",
+        "max": "MAX"
+      },
+      "series": {
+        "sp500": "S&P 500",
+        "nasdaq": "NASDAQ 100",
+        "btc": "Bitcoin",
+        "gold": "Gold",
+        "portfolio": "Portfolio"
+      }
+    },
+    "projection": {
+      "title": "Projected Portfolio Value",
+      "subtitle": "(Next 5 Years)",
+      "label": "Projected Value"
+    },
+    "topAssets": {
+      "title": "Top / Worst Performing Assets",
+      "topTitle": "Top Performers",
+      "worstTitle": "Worst Performers",
+      "noData": "No data available",
+      "headers": {
+        "rank": "#",
+        "asset": "Asset",
+        "gain": "Gain",
+        "loss": "Loss",
+        "value": "Value"
+      }
+    }
   }
 }

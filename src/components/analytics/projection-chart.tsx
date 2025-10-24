@@ -11,17 +11,19 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart";
+import { useTranslations } from "next-intl";
 
 type ProjectionPoint = { year: number; value: number }[];
 
 export function ProjectionChart({ data }: { data: ProjectionPoint }) {
+  const tr = useTranslations('analytics.projection');
   return (
     <Card className="border-none bg-gradient-to-br from-background/80 to-muted/30 shadow-lg hover:shadow-xl transition-all">
       <CardHeader className="pb-2 px-6">
         <CardTitle className="text-lg font-semibold tracking-tight flex items-end gap-2">
-          Projected Portfolio Value
+          {tr('title')}
           <span className="text-muted-foreground text-sm font-normal">
-            (Next 5 Years)
+            {tr('subtitle')}
           </span>
         </CardTitle>
       </CardHeader>
