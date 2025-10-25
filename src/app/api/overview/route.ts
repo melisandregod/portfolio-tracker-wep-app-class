@@ -67,7 +67,9 @@ export async function GET() {
     const prices = await Promise.all(
       symbols.map(async (s) => {
         try {
-          const quote = await yahooFinance.quoteSummary(s, { modules: ["price"] });
+          const quote = await yahooFinance.quoteSummary(s, {
+            modules: ["price"],
+          });
           const price = quote?.price?.regularMarketPrice ?? 0;
           return { symbol: s, price: new Decimal(price) };
         } catch {
@@ -86,19 +88,22 @@ export async function GET() {
       h.currentPrice = price;
       h.currentValue = h.quantity.mul(price);
 
-      h.gainPercent =
-        h.costBasis.gt(0)
-          ? h.currentValue.sub(h.costBasis).div(h.costBasis).mul(100)
-          : new Decimal(0);
+      h.gainPercent = h.costBasis.gt(0)
+        ? h.currentValue.sub(h.costBasis).div(h.costBasis).mul(100)
+        : new Decimal(0);
     }
   } catch (err) {
     console.error("Yahoo Finance error:", err);
   }
 
-  const totalValue = Object.values(holdings)
-    .reduce((sum, h) => sum.add(h.currentValue), new Decimal(0));
-  const totalCost = Object.values(holdings)
-    .reduce((sum, h) => sum.add(h.costBasis), new Decimal(0));
+  const totalValue = Object.values(holdings).reduce(
+    (sum, h) => sum.add(h.currentValue),
+    new Decimal(0)
+  );
+  const totalCost = Object.values(holdings).reduce(
+    (sum, h) => sum.add(h.costBasis),
+    new Decimal(0)
+  );
 
   const gainLossPercent = totalCost.gt(0)
     ? totalValue.sub(totalCost).div(totalCost).mul(100)
@@ -108,8 +113,12 @@ export async function GET() {
   for (const h of Object.values(holdings)) {
     if (!categoryMap[h.category])
       categoryMap[h.category] = { value: new Decimal(0), cost: new Decimal(0) };
-    categoryMap[h.category].value = categoryMap[h.category].value.add(h.currentValue);
-    categoryMap[h.category].cost = categoryMap[h.category].cost.add(h.costBasis);
+    categoryMap[h.category].value = categoryMap[h.category].value.add(
+      h.currentValue
+    );
+    categoryMap[h.category].cost = categoryMap[h.category].cost.add(
+      h.costBasis
+    );
   }
 
   const categories = Object.entries(categoryMap).map(([name, v]) => ({
@@ -127,24 +136,15 @@ export async function GET() {
       : 0,
   }));
 
-  const topHoldings = Object.values(holdings)
-    .filter((h) => h.quantity.gt(0))
-    .sort((a, b) => b.currentValue.sub(a.currentValue).toNumber())
-    .slice(0, 5)
-    .map((h) => {
-      const gainPercent = h.gainPercent.toNumber();
-      const allocationPercent = totalValue.gt(0)
-        ? h.currentValue.div(totalValue).mul(100).toNumber()
-        : 0;
-
-      return {
-        symbol: h.symbol,
-        type: h.category,
-        value: Number(h.currentValue.toFixed(2)),
-        gain: `${gainPercent >= 0 ? "+" : ""}${gainPercent.toFixed(2)}%`,
-        allocation: `${allocationPercent.toFixed(2)}%`,
-      };
-    });
+  const holdingList = Object.values(holdings).map((h) => ({
+    symbol: h.symbol,
+    category: h.category,
+    quantity: h.quantity.toNumber(),
+    avgCost: h.costBasis.gt(0) ? h.costBasis.div(h.quantity).toNumber() : 0,
+    currentPrice: h.currentPrice.toNumber(),
+    currentValue: h.currentValue.toNumber(),
+    gainPercent: h.gainPercent.toNumber(),
+  }));
 
   return NextResponse.json({
     summary: {
@@ -154,6 +154,6 @@ export async function GET() {
     },
     categories,
     allocation,
-    topHoldings,
+    holdingList,
   });
 }

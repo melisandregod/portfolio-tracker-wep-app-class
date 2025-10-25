@@ -13,7 +13,7 @@ import { PortfolioSummary } from "@/components/overview/portfolio-summary";
 import { AssetAllocationChart } from "@/components/overview/asset-allocation-chart";
 import { CategorySummaryTable } from "@/components/overview/category-summary-table";
 import { PerformanceChart } from "@/components/overview/performance-chart";
-import { TopHoldingsTable } from "@/components/overview/top-holdings-table";
+import { HoldingsTable } from "@/components/overview/holdings-table";
 import { useTranslations } from "next-intl";
 
 export default function OverviewPage() {
@@ -70,10 +70,7 @@ export default function OverviewPage() {
       </div>
     );
 
-  if (error)
-    return (
-      <div className="p-6 text-red-500">{t("error")}</div>
-    );
+  if (error) return <div className="p-6 text-red-500">{t("error")}</div>;
 
   if (!data) return null;
 
@@ -83,7 +80,9 @@ export default function OverviewPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">{t("title")}</h1>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>{t("lastUpdated")} {timestamp}</span>
+          <span>
+            {t("lastUpdated")} {timestamp}
+          </span>
           <button
             onClick={() => mutate()}
             className="text-muted-foreground hover:text-foreground transition cursor-pointer"
@@ -112,7 +111,7 @@ export default function OverviewPage() {
           setRange={setRange}
         />
         {/* Top Holdings */}
-        <TopHoldingsTable data={data.topHoldings} />
+        <HoldingsTable data={data.holdingList} />
       </div>
     </div>
   );
