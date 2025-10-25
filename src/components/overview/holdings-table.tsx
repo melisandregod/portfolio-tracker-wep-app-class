@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -8,44 +8,47 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { ArrowUpRight, ArrowDownRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { usePagination } from "@/hooks/use-pagination"
-import { useTranslations } from "next-intl"
+} from "@/components/ui/table";
+import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { usePagination } from "@/hooks/use-pagination";
+import { useTranslations } from "next-intl";
 
 type Holding = {
-  symbol: string
-  type: string
-  value: number
-  gain: string
-  allocation: string
-}
+  symbol: string;
+  category: string;
+  quantity: string;
+  avgCost: number;
+  currentPrice: number;
+  currentValue: number;
+  gainPercent: number;
+};
 
-export function TopHoldingsTable({ data }: { data: Holding[] }) {
-  const t = useTranslations("overview.holdings")
+export function HoldingsTable({ data }: { data: Holding[] }) {
+  const t = useTranslations("overview.holdings");
   const { page, setPage, totalPages, paginatedData, startIdx, endIdx } =
-    usePagination(data, 6) // แสดงหน้า 5 แถวต่อหน้า
-
+    usePagination(data, 6); // แสดง 6 แถวต่อหน้า
+  console.log(data);
+  
   if (!data?.length)
     return (
       <Card className="border-none bg-muted/30 text-center py-12">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-muted-foreground">
-            {t('title')}
+            {t("title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-muted-foreground">
-          {t('noData')}
+          {t("noData")}
         </CardContent>
       </Card>
-    )
+    );
 
   return (
     <Card className="border-none bg-gradient-to-br from-background to-muted/20 shadow-sm hover:shadow-md transition-all">
       <CardHeader className="flex justify-between items-center pb-2">
         <CardTitle className="text-lg font-semibold text-foreground">
-          {t('title')}
+          {t("title")}
         </CardTitle>
       </CardHeader>
 
@@ -55,40 +58,45 @@ export function TopHoldingsTable({ data }: { data: Holding[] }) {
             <TableHeader>
               <TableRow className="bg-muted/40">
                 <TableHead className="text-left font-semibold text-foreground">
-                  {t('headers.asset')}
+                  {t("headers.asset")}
                 </TableHead>
                 <TableHead className="text-left font-semibold text-foreground">
-                  {t('headers.type')}
+                  {t("headers.type")}
                 </TableHead>
                 <TableHead className="text-right font-semibold text-foreground">
-                  {t('headers.value')}
+                  Quantity
                 </TableHead>
                 <TableHead className="text-right font-semibold text-foreground">
-                  {t('headers.gain')}
+                  Avg. Cost
                 </TableHead>
                 <TableHead className="text-right font-semibold text-foreground">
-                  {t('headers.allocation')}
+                  Current Price
+                </TableHead>
+                <TableHead className="text-right font-semibold text-foreground">
+                  Value
+                </TableHead>
+                <TableHead className="text-right font-semibold text-foreground">
+                  Gain
                 </TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody>
               {paginatedData.map((h, i) => {
-                const isLoss = h.gain.startsWith("-")
-                const isGain =
-                  h.gain.startsWith("+") || (!isLoss && h.gain !== "0%")
+                const isLoss = h.gainPercent < 0;
+                const isGain = h.gainPercent > 0;
 
                 const gainColor = isGain
                   ? "text-green-600"
                   : isLoss
                   ? "text-red-500"
-                  : "text-muted-foreground"
+                  : "text-muted-foreground";
 
                 const gainIcon = isGain ? (
                   <ArrowUpRight className="w-4 h-4 text-green-600" />
                 ) : isLoss ? (
                   <ArrowDownRight className="w-4 h-4 text-red-500" />
-                ) : null
+                ) : null;
 
                 return (
                   <TableRow
@@ -99,10 +107,29 @@ export function TopHoldingsTable({ data }: { data: Holding[] }) {
                       {h.symbol}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {h.type}
+                      {h.category}
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      {parseFloat(h.quantity).toLocaleString(undefined, {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 6,
+                      })}
                     </TableCell>
                     <TableCell className="text-right text-foreground font-medium">
-                      ${h.value.toLocaleString(undefined, {
+                      $
+                      {h.avgCost.toLocaleString(undefined, {
+                        maximumFractionDigits: 2,
+                      })}
+                    </TableCell>
+                    <TableCell className="text-right text-foreground font-medium">
+                      $
+                      {h.currentPrice.toLocaleString(undefined, {
+                        maximumFractionDigits: 2,
+                      })}
+                    </TableCell>
+                    <TableCell className="text-right text-foreground font-medium">
+                      $
+                      {h.currentValue.toLocaleString(undefined, {
                         maximumFractionDigits: 2,
                       })}
                     </TableCell>
@@ -110,15 +137,10 @@ export function TopHoldingsTable({ data }: { data: Holding[] }) {
                       className={`text-right font-semibold flex items-center justify-end gap-1 ${gainColor}`}
                     >
                       {gainIcon}
-                      {h.gain}
-                    </TableCell>
-                    <TableCell className="text-right font-medium text-foreground w-[20%]">
-                      <div className="flex flex-col items-end">
-                        <span>{h.allocation}</span>
-                      </div>
+                      {h.gainPercent.toFixed(2)}%
                     </TableCell>
                   </TableRow>
-                )
+                );
               })}
             </TableBody>
           </Table>
@@ -137,10 +159,9 @@ export function TopHoldingsTable({ data }: { data: Holding[] }) {
               onClick={() => setPage(page - 1)}
               disabled={page === 1}
             >
-              {t('pagination.previous')}
+              {t("pagination.previous")}
             </Button>
 
-            {/* ตัวเลขหน้า */}
             {Array.from({ length: totalPages }).map((_, i) => (
               <Button
                 key={i}
@@ -158,11 +179,11 @@ export function TopHoldingsTable({ data }: { data: Holding[] }) {
               onClick={() => setPage(page + 1)}
               disabled={page === totalPages}
             >
-              {t('pagination.next')}
+              {t("pagination.next")}
             </Button>
           </div>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
