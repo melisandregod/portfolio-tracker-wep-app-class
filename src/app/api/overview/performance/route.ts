@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import YahooFinance from "yahoo-finance2";
+import { Decimal } from "@prisma/client/runtime/library";
 
 export async function GET(req: Request) {
   const yahooFinance = new YahooFinance({ suppressNotices: ["ripHistorical"] });
@@ -69,21 +70,34 @@ export async function GET(req: Request) {
   // รวมมูลค่าพอร์ต
   const portfolioTimeline: Record<string, number> = {};
 
-  for (const { symbol, data } of historicalData) {
-    for (const point of data) {
-      const dateStr = point.date.toISOString().split("T")[0];
-      const txBefore = transactions.filter(
-        (t) => t.symbol.toUpperCase() === symbol && t.date <= point.date
-      );
-      const quantity = txBefore.reduce(
-        (sum, t) => sum + (t.type === "BUY" ? t.quantity : -t.quantity),
-        0
-      );
-      const totalValue = quantity * (point.close ?? 0);
-      portfolioTimeline[dateStr] =
-        (portfolioTimeline[dateStr] || 0) + totalValue;
-    }
+  
+for (const { symbol, data } of historicalData) {
+  for (const point of data) {
+    const dateStr = point.date.toISOString().split("T")[0];
+
+    const txBefore = transactions.filter(
+      (t) => t.symbol.toUpperCase() === symbol && t.date <= point.date
+    );
+
+    // ✅ คำนวณ quantity ด้วย Decimal อย่างเดียว
+    const quantity = txBefore.reduce((sum, t) => {
+      const q = new Decimal(t.quantity);
+      return t.type === "BUY" ? sum.add(q) : sum.sub(q);
+    }, new Decimal(0));
+
+    // ใช้ Decimal คำนวณมูลค่าทั้งหมด (ไม่ปัดทศนิยม)
+    const close = new Decimal(point.close ?? 0);
+    const totalValue = quantity.mul(close);
+
+    // รวมค่าของวันนั้นโดยใช้ Decimal ตลอด
+    const prev = portfolioTimeline[dateStr]
+      ? new Decimal(portfolioTimeline[dateStr])
+      : new Decimal(0);
+
+    const newValue = prev.add(totalValue);
+    portfolioTimeline[dateStr] = newValue.toNumber(); // แปลงเป็น number ตอนสุดท้าย
   }
+}
 
   // เรียงวันตามลำดับ
   const performance = Object.entries(portfolioTimeline)

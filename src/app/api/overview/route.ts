@@ -2,15 +2,16 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import YahooFinance from "yahoo-finance2";
+import { Decimal } from "@prisma/client/runtime/library";
 
 type HoldingSummary = {
   symbol: string;
   category: string;
-  quantity: number;
-  costBasis: number;
-  currentPrice: number;
-  currentValue: number;
-  gainPercent: number;
+  quantity: Decimal;
+  costBasis: Decimal;
+  currentPrice: Decimal;
+  currentValue: Decimal;
+  gainPercent: Decimal;
 };
 
 export async function GET() {
@@ -19,7 +20,6 @@ export async function GET() {
   if (!session?.user?.id)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  // ดึงธุรกรรมทั้งหมด
   const transactions = await prisma.transaction.findMany({
     where: { userId: session.user.id },
   });
@@ -30,11 +30,9 @@ export async function GET() {
       categories: [],
       allocation: [],
       topHoldings: [],
-      performance: [],
     });
   }
 
-  // รวมยอดคงเหลือต่อ symbol
   const holdings: Record<string, HoldingSummary> = {};
 
   for (const tx of transactions) {
@@ -43,117 +41,117 @@ export async function GET() {
       holdings[key] = {
         symbol: key,
         category: tx.category,
-        quantity: 0,
-        costBasis: 0,
-        currentPrice: 0,
-        currentValue: 0,
-        gainPercent: 0,
+        quantity: new Decimal(0),
+        costBasis: new Decimal(0),
+        currentPrice: new Decimal(0),
+        currentValue: new Decimal(0),
+        gainPercent: new Decimal(0),
       };
     }
 
+    const qty = new Decimal(tx.quantity);
+    const price = new Decimal(tx.price);
+    const cost = qty.mul(price);
+
     if (tx.type === "BUY") {
-      holdings[key].quantity += tx.quantity;
-      holdings[key].costBasis += tx.quantity * tx.price;
+      holdings[key].quantity = holdings[key].quantity.add(qty);
+      holdings[key].costBasis = holdings[key].costBasis.add(cost);
     } else if (tx.type === "SELL") {
-      holdings[key].quantity -= tx.quantity;
-      holdings[key].costBasis -= tx.quantity * tx.price;
+      holdings[key].quantity = holdings[key].quantity.sub(qty);
+      holdings[key].costBasis = holdings[key].costBasis.sub(cost);
     }
   }
 
-  // 3ดึงราคาปัจจุบันจาก Yahoo Finance แบบ promise all
   const symbols = Object.keys(holdings);
   try {
     const prices = await Promise.all(
       symbols.map(async (s) => {
         try {
-          const quote = await yahooFinance.quoteSummary(s, {
-            modules: ["price"],
-          });
+          const quote = await yahooFinance.quoteSummary(s, { modules: ["price"] });
           const price = quote?.price?.regularMarketPrice ?? 0;
-          return { symbol: s, price };
+          return { symbol: s, price: new Decimal(price) };
         } catch {
           console.warn(`Yahoo price fetch failed for ${s}`);
-          return { symbol: s, price: 0 };
+          return { symbol: s, price: new Decimal(0) };
         }
       })
     );
 
-    // สร้าง map symbol → price
     const priceMap = Object.fromEntries(prices.map((p) => [p.symbol, p.price]));
 
     for (const s of symbols) {
-      const price = priceMap[s] ?? 0;
       const h = holdings[s];
+      const price = priceMap[s] ?? new Decimal(0);
+
       h.currentPrice = price;
-      h.currentValue = h.quantity * price;
+      h.currentValue = h.quantity.mul(price);
+
       h.gainPercent =
-        h.costBasis > 0
-          ? ((h.currentValue - h.costBasis) / h.costBasis) * 100
-          : 0;
+        h.costBasis.gt(0)
+          ? h.currentValue.sub(h.costBasis).div(h.costBasis).mul(100)
+          : new Decimal(0);
     }
   } catch (err) {
     console.error("Yahoo Finance error:", err);
   }
 
-  // สรุปรวมทั้งพอร์ต
-  const totalValue = Object.values(holdings).reduce(
-    (sum, h) => sum + h.currentValue,
-    0
-  );
-  const totalCost = Object.values(holdings).reduce(
-    (sum, h) => sum + h.costBasis,
-    0
-  );
-  const gainLossPercent =
-    totalCost > 0 ? ((totalValue - totalCost) / totalCost) * 100 : 0;
+  const totalValue = Object.values(holdings)
+    .reduce((sum, h) => sum.add(h.currentValue), new Decimal(0));
+  const totalCost = Object.values(holdings)
+    .reduce((sum, h) => sum.add(h.costBasis), new Decimal(0));
 
-  // รวมตามหมวด
-  const categoryMap: Record<string, { value: number; cost: number }> = {};
+  const gainLossPercent = totalCost.gt(0)
+    ? totalValue.sub(totalCost).div(totalCost).mul(100)
+    : new Decimal(0);
+
+  const categoryMap: Record<string, { value: Decimal; cost: Decimal }> = {};
   for (const h of Object.values(holdings)) {
     if (!categoryMap[h.category])
-      categoryMap[h.category] = { value: 0, cost: 0 };
-    categoryMap[h.category].value += h.currentValue;
-    categoryMap[h.category].cost += h.costBasis;
+      categoryMap[h.category] = { value: new Decimal(0), cost: new Decimal(0) };
+    categoryMap[h.category].value = categoryMap[h.category].value.add(h.currentValue);
+    categoryMap[h.category].cost = categoryMap[h.category].cost.add(h.costBasis);
   }
 
   const categories = Object.entries(categoryMap).map(([name, v]) => ({
     name,
-    value: v.value,
-    gain: v.cost > 0 ? ((v.value - v.cost) / v.cost) * 100 : 0,
+    value: v.value.toNumber(),
+    gain: v.cost.gt(0)
+      ? v.value.sub(v.cost).div(v.cost).mul(100).toNumber()
+      : 0,
   }));
 
-  // Allocation chart (%)
   const allocation = categories.map((c) => ({
     name: c.name,
-    value:
-      totalValue > 0
-        ? parseFloat(((c.value / totalValue) * 100).toFixed(2)) // ทศนิยม 2 ตำแหน่ง
-        : 0,
+    value: totalValue.gt(0)
+      ? Number(((c.value / totalValue.toNumber()) * 100).toFixed(2))
+      : 0,
   }));
 
-  // Top holdings
   const topHoldings = Object.values(holdings)
-    .filter((h) => h.quantity > 0)
-    .sort((a, b) => b.currentValue - a.currentValue)
+    .filter((h) => h.quantity.gt(0))
+    .sort((a, b) => b.currentValue.sub(a.currentValue).toNumber())
     .slice(0, 5)
     .map((h) => {
-      const gainPercent = Number.isFinite(h.gainPercent) ? h.gainPercent : 0;
-
-      const allocationPercent =
-        totalValue > 0 && Number.isFinite(h.currentValue)
-          ? (h.currentValue / totalValue) * 100
-          : 0;
+      const gainPercent = h.gainPercent.toNumber();
+      const allocationPercent = totalValue.gt(0)
+        ? h.currentValue.div(totalValue).mul(100).toNumber()
+        : 0;
 
       return {
         symbol: h.symbol,
         type: h.category,
-        value: Number(h.currentValue.toFixed(2)), // ก็บเป็น number ทศนิยม 2 ตำแหน่ง
-        gain: `${gainPercent >= 0 ? "+" : ""}${gainPercent.toFixed(2)}%`, //  มีเครื่องหมาย +/-
-        allocation: `${allocationPercent.toFixed(2)}%`, // ทศนิยม 2 ตำแหน่งเสมอ
+        value: Number(h.currentValue.toFixed(2)),
+        gain: `${gainPercent >= 0 ? "+" : ""}${gainPercent.toFixed(2)}%`,
+        allocation: `${allocationPercent.toFixed(2)}%`,
       };
     });
+
   return NextResponse.json({
-    summary: { totalValue, totalCost, gainLossPercent },
+    summary: {
+      totalValue: totalValue.toNumber(),
+      totalCost: totalCost.toNumber(),
+      gainLossPercent: gainLossPercent.toNumber(),
+    },
     categories,
     allocation,
     topHoldings,
