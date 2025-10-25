@@ -25,7 +25,7 @@ model Transaction {
   name      String? // Optional: "NVIDIA Corporation"
   category  AssetCategory
   type      TransactionType
-  quantity  Float
+  quantity  Decimal  @db.Decimal(18, 8)
   price     Float
   fee       Float?
   note      String?

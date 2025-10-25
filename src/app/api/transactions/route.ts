@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         name: body.name,
         category: body.category,
         type: body.type,
-        quantity: Number(body.quantity),
+        quantity: body.quantity.toString(),
         price: Number(body.price),
         fee: body.fee ? Number(body.fee) : null,
         note: body.note,
