@@ -19,12 +19,12 @@ import { cn } from "@/lib/utils";
 import { CustomTooltip } from "./custom-tool-tip";
 import { useTranslations } from "next-intl";
 
-// Types
+// ✅ ปรับ type ให้ตรงกับ API ใหม่
 interface PerformanceCompareResponse {
-  portfolio: { date: string; value: number }[];
+  portfolio: { date: string; value: number; gain: number }[];
   benchmarks: {
     name: string;
-    data: { date: string; value: number }[];
+    data: { date: string; gain: number }[];
   }[];
 }
 
@@ -34,13 +34,11 @@ interface MergedPerformancePoint {
   [key: string]: number | string | undefined;
 }
 
-
-
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export function PerformanceBenchmarks() {
-  type RangeType = "day" | "month" | "year" | "max";
-  const tr = useTranslations('analytics.benchmarks');
+  type RangeType = "day" | "month" | "year" | "max" | "week";
+  const tr = useTranslations("analytics.benchmarks");
   const [range, setRange] = useState<RangeType>("year");
   const [selectedBenchmarks, setSelectedBenchmarks] = useState<string[]>([
     "sp500",
@@ -56,7 +54,7 @@ export function PerformanceBenchmarks() {
     return (
       <Card className="border-none bg-gradient-to-br from-background to-muted/20 shadow-sm hover:shadow-md transition-all">
         <CardHeader>
-          <CardTitle>{tr('title')}</CardTitle>
+          <CardTitle>{tr("title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-[300px] rounded-xl" />
@@ -67,34 +65,41 @@ export function PerformanceBenchmarks() {
 
   const { portfolio, benchmarks } = data;
 
-  // Merge portfolio + benchmarks
+  // ✅ ใช้ gain แทน value ในกราฟ
   const lastSeen: Record<string, number> = {};
   const merged: MergedPerformancePoint[] = portfolio.map((p) => {
-    const entry: MergedPerformancePoint = { date: p.date, portfolio: p.value };
+    const entry: MergedPerformancePoint = {
+      date: p.date,
+      portfolio: p.gain, // ใช้ %gain
+    };
+
     for (const b of benchmarks) {
       const match = b.data.find((x) => x.date === p.date);
       if (match) {
-        entry[b.name] = match.value;
-        lastSeen[b.name] = match.value;
+        entry[b.name] = match.gain;
+        lastSeen[b.name] = match.gain;
       } else if (lastSeen[b.name] !== undefined) {
         entry[b.name] = lastSeen[b.name];
-      } else entry[b.name] = 0;
+      } else {
+        entry[b.name] = 0;
+      }
     }
     return entry;
   });
 
   const ranges: { key: RangeType; label: string }[] = [
-    { key: "day", label: tr('ranges.day')},
-    { key: "month", label: tr('ranges.month') },
-    { key: "year", label: tr('ranges.year') },
-    { key: "max", label: tr('ranges.max') },
+    { key: "day", label: tr("ranges.day") },
+    { key: "week", label: tr("ranges.week") },
+    { key: "month", label: tr("ranges.month") },
+    { key: "year", label: tr("ranges.year") },
+    { key: "max", label: tr("ranges.max") },
   ];
 
   const benchmarksList = [
-    { key: "sp500", label: tr('series.sp500'), color: "#3b82f6" },
-    { key: "nasdaq", label: tr('series.nasdaq'), color: "#a855f7" },
-    { key: "btc", label: tr('series.btc'), color: "#f59e0b" },
-    { key: "gold", label: tr('series.gold'), color: "#eab308" },
+    { key: "sp500", label: tr("series.sp500"), color: "#3b82f6" },
+    { key: "nasdaq", label: tr("series.nasdaq"), color: "#a855f7" },
+    { key: "btc", label: tr("series.btc"), color: "#f59e0b" },
+    { key: "gold", label: tr("series.gold"), color: "#eab308" },
   ];
 
   const toggleBenchmark = (key: string) => {
@@ -107,9 +112,9 @@ export function PerformanceBenchmarks() {
     <Card className="border-none bg-gradient-to-br from-background/80 to-muted/30 shadow-lg hover:shadow-xl transition-all">
       <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <CardTitle className="text-lg font-semibold tracking-tight">
-          {tr('title')}
+          {tr("title")}
           <span className="text-muted-foreground text-sm font-normal ml-2">
-          ({tr('subtitle')})
+            ({tr("subtitle")})
           </span>
         </CardTitle>
 
@@ -182,7 +187,6 @@ export function PerformanceBenchmarks() {
                 tickFormatter={(v) => `${v.toFixed(0)}%`}
               />
               <Tooltip content={<CustomTooltip />} />
-              
               <Legend wrapperStyle={{ fontSize: 12 }} />
 
               {/* Portfolio line */}
@@ -192,7 +196,7 @@ export function PerformanceBenchmarks() {
                 stroke="#16a34a"
                 strokeWidth={2.5}
                 dot={false}
-                name="Portfolio"
+                name={tr("series.portfolio")}
                 activeDot={{ r: 5 }}
               />
 
