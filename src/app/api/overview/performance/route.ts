@@ -13,7 +13,12 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const range = searchParams.get("range") || "month";
 
-  // ดึงธุรกรรมทั้งหมด
+  // set interval
+  let interval: "1d" | "1wk" | "1mo" = "1d";
+  if (range === "year") interval = "1wk";
+  if (range === "max") interval = "1mo";
+
+  // ดึงธุรกรรมทั้งหมดของ user
   const transactions = await prisma.transaction.findMany({
     where: { userId: session.user.id },
     orderBy: { date: "asc" },
@@ -21,88 +26,109 @@ export async function GET(req: Request) {
 
   if (!transactions.length) return NextResponse.json([]);
 
-  // วันลงทุนแรกจริง
+  // คำนวณช่วงที่ต้องการดู
   const firstTxDate = new Date(transactions[0].date);
-
-  // คำนวณช่วงเวลา
   const endDate = new Date();
-  const startDate = new Date();
 
-  switch (range) {
-    case "day":
-      startDate.setDate(endDate.getDate() - 2);
-      break;
-    case "month":
-      startDate.setMonth(endDate.getMonth() - 1);
-      break;
-    case "year":
-      startDate.setFullYear(endDate.getFullYear() - 1);
-      break;
-    case "max":
-    default:
-      // max ใช้วันลงทุนแรกเสมอ
-      startDate.setTime(firstTxDate.getTime());
-      break;
+  // ดึงข้อมูลทั้งหมดแบบ "max" เสมอ
+  const symbols = [...new Set(transactions.map((t) => t.symbol.toUpperCase()))];
+  const mapSymbol = (s: string) =>
+    s === "BTC"
+      ? "BTC-USD"
+      : s === "ETH"
+      ? "ETH-USD"
+      : s === "XAUUSD"
+      ? "GC=F"
+      : s;
+
+  // สร้าง timeline เต็มตั้งแต่เริ่มลงทุนจนวันนี้
+  const allDates: string[] = [];
+  const cursor = new Date(firstTxDate);
+  while (cursor <= endDate) {
+    allDates.push(cursor.toISOString().split("T")[0]);
+    cursor.setDate(cursor.getDate() + 1);
   }
 
-  // Check universal: ถ้า startDate < วันลงทุนแรก → ปรับให้เท่ากับวันนั้น
-  if (startDate < firstTxDate) startDate.setTime(firstTxDate.getTime());
-
-  // ดึงราคาย้อนหลังจาก Yahoo
-  const symbols = [...new Set(transactions.map((t) => t.symbol.toUpperCase()))];
-
+  // ดึงราคาย้อนหลังทั้งหมด (1d พอ)
   const historicalData = await Promise.all(
-    symbols.map(async (s) => {
-      const mapped = s === "BTC" ? "BTC-USD" : s === "ETH" ? "ETH-USD" : s;
+    symbols.map(async (symbol) => {
       try {
+        const mapped = mapSymbol(symbol);
         const data = await yahooFinance.historical(mapped, {
-          period1: startDate,
+          period1: firstTxDate,
           period2: endDate,
-          interval: "1d",
+          interval: interval,
         });
-        return { symbol: s, data };
-      } catch {
-        return { symbol: s, data: [] };
+        return { symbol, data };
+      } catch (err) {
+        console.error(`Error fetching ${symbol}:`, err);
+        return { symbol, data: [] };
       }
     })
   );
 
-  // รวมมูลค่าพอร์ต
-  const portfolioTimeline: Record<string, number> = {};
+  // คำนวณพอร์ตสะสม (ไม่ต้องสน range ก่อน)
+  const portfolioTimeline: Record<string, Decimal> = {};
+  for (const date of allDates) portfolioTimeline[date] = new Decimal(0);
 
-  
-for (const { symbol, data } of historicalData) {
-  for (const point of data) {
-    const dateStr = point.date.toISOString().split("T")[0];
+  for (const { symbol, data } of historicalData) {
+    let lastPrice = new Decimal(0);
 
-    const txBefore = transactions.filter(
-      (t) => t.symbol.toUpperCase() === symbol && t.date <= point.date
-    );
+    for (const date of allDates) {
+      const found = data.find(
+        (p) => p.date.toISOString().split("T")[0] === date
+      );
+      if (found?.close) lastPrice = new Decimal(found.close);
+      if (lastPrice.eq(0)) continue;
 
-    // ✅ คำนวณ quantity ด้วย Decimal อย่างเดียว
-    const quantity = txBefore.reduce((sum, t) => {
-      const q = new Decimal(t.quantity);
-      return t.type === "BUY" ? sum.add(q) : sum.sub(q);
-    }, new Decimal(0));
+      const txBefore = transactions.filter(
+        (t) =>
+          t.symbol.toUpperCase() === symbol &&
+          new Date(t.date).getTime() <= new Date(date).getTime()
+      );
+      if (!txBefore.length) continue;
 
-    // ใช้ Decimal คำนวณมูลค่าทั้งหมด (ไม่ปัดทศนิยม)
-    const close = new Decimal(point.close ?? 0);
-    const totalValue = quantity.mul(close);
+      const quantity = txBefore.reduce((sum, t) => {
+        const q = new Decimal(t.quantity);
+        return t.type === "BUY" ? sum.add(q) : sum.sub(q);
+      }, new Decimal(0));
 
-    // รวมค่าของวันนั้นโดยใช้ Decimal ตลอด
-    const prev = portfolioTimeline[dateStr]
-      ? new Decimal(portfolioTimeline[dateStr])
-      : new Decimal(0);
-
-    const newValue = prev.add(totalValue);
-    portfolioTimeline[dateStr] = newValue.toNumber(); // แปลงเป็น number ตอนสุดท้าย
+      if (quantity.lte(0)) continue;
+      portfolioTimeline[date] = portfolioTimeline[date].add(
+        quantity.mul(lastPrice)
+      );
+    }
   }
-}
 
-  // เรียงวันตามลำดับ
-  const performance = Object.entries(portfolioTimeline)
-    .map(([date, portfolio]) => ({ date, portfolio }))
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  // แปลงเป็น array ทั้งหมดก่อน filter
+  const fullPerformance = allDates.map((date) => ({
+    date,
+    portfolio: portfolioTimeline[date].toNumber(),
+  }));
 
-  return NextResponse.json(performance);
+  // ตัดช่วงเวลาที่ต้องการแสดง
+  const cutoff = new Date(endDate);
+  switch (range) {
+    case "day":
+      cutoff.setDate(endDate.getDate() - 3);
+      break;
+    case "week":
+      cutoff.setDate(endDate.getDate() - 7);
+      break;
+    case "month":
+      cutoff.setMonth(endDate.getMonth() - 1);
+      break;
+    case "year":
+      cutoff.setFullYear(endDate.getFullYear() - 1);
+      break;
+    case "max":
+    default:
+      return NextResponse.json(fullPerformance);
+  }
+
+  const filtered = fullPerformance.filter(
+    (p) => new Date(p.date).getTime() >= cutoff.getTime()
+  );
+
+  return NextResponse.json(filtered);
 }

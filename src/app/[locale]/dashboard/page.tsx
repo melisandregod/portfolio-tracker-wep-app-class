@@ -17,7 +17,9 @@ import { HoldingsTable } from "@/components/overview/holdings-table";
 import { useTranslations } from "next-intl";
 
 export default function OverviewPage() {
-  const [range, setRange] = useState<"day" | "month" | "year" | "max">("month");
+  const [range, setRange] = useState<"day" | "week" | "month" | "year" | "max">(
+    "month"
+  );
 
   const { data, error, isLoading, mutate } = useSWR<OverviewResponse>(
     "/api/overview",

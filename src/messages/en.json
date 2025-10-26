@@ -47,6 +47,7 @@
       "title": "Portfolio Performance",
       "ranges": {
         "day": "1D",
+        "week": "1W",
         "month": "1M",
         "year": "1Y",
         "max": "MAX"
@@ -174,6 +175,7 @@
       "subtitle": "% Growth from First Investment",
       "ranges": {
         "day": "1D",
+        "week": "1W",
         "month": "1M",
         "year": "1Y",
         "max": "MAX"

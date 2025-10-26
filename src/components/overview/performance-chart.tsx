@@ -16,14 +16,17 @@ import { useTranslations } from "next-intl";
 interface Props {
   data?: PerformancePoint[];
   isLoading?: boolean;
-  range: "day" | "month" | "year" | "max";
-  setRange: (r: "day" | "month" | "year" | "max") => void;
+  range: "day" | "week" | "month" | "year" | "max"; // เพิ่ม "week"
+  setRange: (r: "day" | "week" | "month" | "year" | "max") => void; // ✅
 }
 
 export function PerformanceChart({ data, isLoading, range, setRange }: Props) {
   const t = useTranslations("overview.performance");
+
+  // เพิ่ม week ในปุ่มเลือกช่วงเวลา
   const ranges: { key: typeof range; label: string }[] = [
     { key: "day", label: t("ranges.day") },
+    { key: "week", label: t("ranges.week") },
     { key: "month", label: t("ranges.month") },
     { key: "year", label: t("ranges.year") },
     { key: "max", label: t("ranges.max") },
@@ -88,7 +91,6 @@ export function PerformanceChart({ data, isLoading, range, setRange }: Props) {
                   tick={{ fontSize: 12, fill: "#6b7280" }}
                   tickFormatter={(value) => {
                     const d = new Date(value);
-                    // ตัวอย่าง: "Oct 21"
                     return d.toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
