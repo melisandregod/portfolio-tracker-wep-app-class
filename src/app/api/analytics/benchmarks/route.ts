@@ -26,7 +26,9 @@ export async function GET(req: Request) {
   const yahooFinance = new YahooFinance({ suppressNotices: ["ripHistorical"] });
   const { searchParams } = new URL(req.url);
   const range = searchParams.get("range") || "month";
-
+  let interval: "1d" | "1wk" | "1mo" = "1d";
+  if (range === "year") interval = "1wk";
+  if (range === "max") interval = "1mo";
   // ดึงธุรกรรมทั้งหมด
   const transactions = await prisma.transaction.findMany({
     where: { userId: session.user.id },
@@ -84,7 +86,7 @@ export async function GET(req: Request) {
         const data = await yahooFinance.historical(mapSymbol(symbol), {
           period1: start,
           period2: end,
-          interval: "1d",
+          interval: interval,
         });
         return { symbol, data };
       } catch {
@@ -142,7 +144,7 @@ export async function GET(req: Request) {
         const data = await yahooFinance.historical(symbol, {
           period1: start,
           period2: end,
-          interval: "1d",
+          interval: interval,
         });
 
         let lastPrice = 0;
