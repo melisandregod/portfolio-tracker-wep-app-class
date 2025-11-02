@@ -100,6 +100,7 @@ export async function GET(req: Request) {
 
   for (const { symbol, data } of historicalData) {
     let lastPrice = new Decimal(0);
+
     for (const date of allDates) {
       const found = data.find(
         (p) => p.date.toISOString().split("T")[0] === date
@@ -111,14 +112,32 @@ export async function GET(req: Request) {
           t.symbol.toUpperCase() === symbol &&
           new Date(t.date).getTime() <= new Date(date).getTime()
       );
+      if (!txBefore.length) continue;
 
-      const quantity = txBefore.reduce((sum, t) => {
-        const q = new Decimal(t.quantity);
-        return t.type === "BUY" ? sum.add(q) : sum.sub(q);
-      }, new Decimal(0));
+      // ✅ ปรับเป็น cost-adjusted (เหมือน analytics)
+      let totalQty = new Decimal(0);
+      let totalCost = new Decimal(0);
+      for (const tx of txBefore) {
+        const qty = new Decimal(tx.quantity);
+        const price = new Decimal(tx.price);
+        const cost = qty.mul(price);
 
-      if (quantity.lte(0)) continue;
-      const totalValue = quantity.mul(lastPrice);
+        if (tx.type === "BUY") {
+          totalQty = totalQty.add(qty);
+          totalCost = totalCost.add(cost);
+        } else if (tx.type === "SELL") {
+          const sellQty = Decimal.min(qty, totalQty);
+          const avgCost = totalQty.gt(0)
+            ? totalCost.div(totalQty)
+            : new Decimal(0);
+          totalQty = totalQty.sub(sellQty);
+          totalCost = totalCost.sub(avgCost.mul(sellQty));
+        }
+      }
+
+      if (totalQty.lte(0)) continue;
+
+      const totalValue = totalQty.mul(lastPrice);
       portfolioTimeline[date] = portfolioTimeline[date].add(totalValue);
     }
   }

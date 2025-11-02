@@ -10,7 +10,9 @@ import {
 } from "@/lib/analytics-utils";
 
 export async function GET() {
-  const yahooFinance = new YahooFinance({ suppressNotices: ["yahooSurvey","ripHistorical"] });
+  const yahooFinance = new YahooFinance({
+    suppressNotices: ["yahooSurvey", "ripHistorical"],
+  });
   const session = await auth();
   if (!session?.user?.id)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -134,7 +136,6 @@ export async function GET() {
     })
   );
 
-  // รวมมูลค่าพอร์ตต่อสัปดาห์
   const timeline: Record<string, number> = {};
   for (const { symbol, data } of historicalData) {
     for (const point of data) {
@@ -142,12 +143,34 @@ export async function GET() {
       const txBefore = transactions.filter(
         (t) => t.symbol.toUpperCase() === symbol && t.date <= point.date
       );
-      const quantity = txBefore.reduce((sum, t) => {
-        const qty = new Decimal(t.quantity);
-        return t.type === "BUY" ? sum.add(qty) : sum.sub(qty);
-      }, new Decimal(0));
+      if (!txBefore.length) continue;
+
+      // ใช้ cost-adjusted logic (ตัดสินทรัพย์ที่ขายหมดออก)
+      let totalQty = new Decimal(0);
+      let totalCost = new Decimal(0);
+      for (const tx of txBefore) {
+        const qty = new Decimal(tx.quantity);
+        const price = new Decimal(tx.price);
+        const cost = qty.mul(price);
+
+        if (tx.type === "BUY") {
+          totalQty = totalQty.add(qty);
+          totalCost = totalCost.add(cost);
+        } else if (tx.type === "SELL") {
+          const sellQty = Decimal.min(qty, totalQty);
+          const avgCost = totalQty.gt(0)
+            ? totalCost.div(totalQty)
+            : new Decimal(0);
+          totalQty = totalQty.sub(sellQty);
+          totalCost = totalCost.sub(avgCost.mul(sellQty));
+        }
+      }
+
+      if (totalQty.lte(0)) continue;
+
       const close = new Decimal(point.close ?? 0);
-      const totalValue = quantity.mul(close);
+      const totalValue = totalQty.mul(close);
+
       const prev = timeline[dateStr]
         ? new Decimal(timeline[dateStr])
         : new Decimal(0);
