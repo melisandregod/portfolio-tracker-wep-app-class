@@ -8,7 +8,9 @@ import { useTranslations } from "next-intl"
 
 export function TransactionSummary() {
   const { data, error, isLoading } = useSWR<Transaction[]>("/api/transactions")
-  const t = useTranslations('transactions.summary');
+  const t = useTranslations("transactions.summary")
+
+  // ---------- Loading ----------
   if (isLoading)
     return (
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -30,32 +32,50 @@ export function TransactionSummary() {
       </section>
     )
 
+  // ---------- Error ----------
   if (error || !data)
-    return (
-      <p className="text-sm text-destructive">
-        {t('error')}
-      </p>
-    )
+    return <p className="text-sm text-destructive">{t("error")}</p>
 
-  // คำนวณยอดรวม
-  const totalBuy = data
-    .filter((t) => t.type === "BUY")
-    .reduce((sum, t) => sum + t.quantity * t.price, 0)
+  // ---------- แยกธุรกรรมซื้อขาย ----------
+  const buyTx = data.filter((t) => t.type === "BUY")
+  const sellTx = data.filter((t) => t.type === "SELL")
 
-  const totalSell = data
-    .filter((t) => t.type === "SELL")
-    .reduce((sum, t) => sum + t.quantity * t.price, 0)
+  // ---------- ยอดซื้อขายรวม ----------
+  const totalBuy = buyTx.reduce(
+    (sum, t) => sum + Number(t.quantity) * Number(t.price),
+    0
+  )
+  const totalBuyQty = buyTx.reduce((sum, t) => sum + Number(t.quantity), 0)
+  const totalSell = sellTx.reduce(
+    (sum, t) => sum + Number(t.quantity) * Number(t.price),
+    0
+  )
+  const totalSellQty = sellTx.reduce((sum, t) => sum + Number(t.quantity), 0)
 
-  const hasSell = data.some((t) => t.type === "SELL")
-  const net = hasSell ? totalSell - totalBuy : 0
+  // ---------- คำนวณต้นทุนเฉลี่ย ----------
+  const avgCost = totalBuyQty > 0 ? totalBuy / totalBuyQty : 0
 
+  // ---------- คำนวณกำไรแบบ FIFO / partial sell ----------
+  let remainingQty = totalBuyQty
+  let profit = 0
+
+  for (const sell of sellTx) {
+    if (remainingQty <= 0) break
+    const sellQty = Math.min(sell.quantity, remainingQty)
+    const sellRevenue = sell.price * sellQty
+    const sellCost = avgCost * sellQty
+    profit += sellRevenue - sellCost
+    remainingQty -= sellQty
+  }
+
+  // ---------- UI ----------
   return (
     <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {/*  Total Buy */}
+      {/* Total Buy */}
       <Card className="border-none bg-gradient-to-br from-emerald-500/10 via-background to-background shadow-sm hover:shadow-md transition-all">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            {t('totalBuy')}
+            {t("totalBuy")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -69,7 +89,7 @@ export function TransactionSummary() {
       <Card className="border-none bg-gradient-to-br from-sky-500/10 via-background to-background shadow-sm hover:shadow-md transition-all">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            {t('totalSell')}
+            {t("totalSell")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -79,35 +99,43 @@ export function TransactionSummary() {
         </CardContent>
       </Card>
 
-      {/*  Net Profit/Loss */}
+      {/* Net Profit / Loss */}
       <Card className="border-none bg-gradient-to-br from-background to-muted/20 shadow-sm hover:shadow-md transition-all">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            {t('net')}
+            {t("net")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p
             className={`text-2xl font-bold ${
-              net > 0
+              profit > 0
                 ? "text-green-500"
-                : net < 0
+                : profit < 0
                 ? "text-red-500"
                 : "text-muted-foreground"
             }`}
           >
-            {net === 0
+            {profit === 0
               ? "–"
-              : `$${Math.abs(net).toLocaleString(undefined, {
+              : `$${Math.abs(profit).toLocaleString(undefined, {
                   maximumFractionDigits: 2,
                 })}`}
           </p>
+
+          {/* แสดงเปอร์เซ็นต์กำไรถ้ามี */}
+          {profit !== 0 && (
+            <p className="text-sm text-muted-foreground mt-1">
+              ({((profit / (totalSellQty * avgCost)) * 100).toFixed(2)}%)
+            </p>
+          )}
+
           <p className="text-xs mt-1 text-muted-foreground">
-            {net > 0
-              ? t('profit')
-              : net < 0
-              ? t('loss')
-              : t('noGains')}
+            {profit > 0
+              ? t("profit")
+              : profit < 0
+              ? t("loss")
+              : t("noGains")}
           </p>
         </CardContent>
       </Card>
