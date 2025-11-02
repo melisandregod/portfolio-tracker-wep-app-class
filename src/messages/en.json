@@ -18,6 +18,10 @@
     "title": "Portfolio Overview",
     "lastUpdated": "Last updated:",
     "refresh": "Refresh",
+    "noData": {
+      "title": "No portfolio data yet",
+      "desc": "Add some transactions to see your performance here."
+    },
     "loading": "Loading overview data...",
     "error": "Failed to load overview data.",
     "summary": {

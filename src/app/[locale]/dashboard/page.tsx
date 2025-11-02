@@ -73,8 +73,14 @@ export default function OverviewPage() {
     );
 
   if (error) return <div className="p-6 text-red-500">{t("error")}</div>;
-
-  if (!data) return null;
+  if (!data || !data.holdingList || data.holdingList.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] text-center gap-3 text-muted-foreground">
+        <p className="text-lg font-medium">{t("noData.title")}</p>
+        <p className="text-sm text-muted-foreground">{t("noData.desc")}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8 p-6">

@@ -20,19 +20,22 @@ export async function GET() {
   if (!session?.user?.id)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  // ดึงธุรกรรมทั้งหมดของ user
   const transactions = await prisma.transaction.findMany({
     where: { userId: session.user.id },
   });
 
+  // ถ้ายังไม่มีธุรกรรมเลย
   if (!transactions.length) {
     return NextResponse.json({
       summary: { totalValue: 0, totalCost: 0, gainLossPercent: 0 },
       categories: [],
       allocation: [],
-      topHoldings: [],
+      holdingList: [],
     });
   }
 
+  // รวมธุรกรรมเป็นสถานะล่าสุดของแต่ละ symbol
   const holdings: Record<string, HoldingSummary> = {};
 
   for (const tx of transactions) {
@@ -57,37 +60,57 @@ export async function GET() {
       holdings[key].quantity = holdings[key].quantity.add(qty);
       holdings[key].costBasis = holdings[key].costBasis.add(cost);
     } else if (tx.type === "SELL") {
-      holdings[key].quantity = holdings[key].quantity.sub(qty);
-      holdings[key].costBasis = holdings[key].costBasis.sub(cost);
+      // ❗ หักออกเฉพาะส่วนที่ยังเหลือ
+      const available = holdings[key].quantity;
+      const sellQty = Decimal.min(qty, available); // ป้องกันติดลบ
+      const avgCost = available.gt(0)
+        ? holdings[key].costBasis.div(available)
+        : new Decimal(0);
+
+      holdings[key].quantity = holdings[key].quantity.sub(sellQty);
+      holdings[key].costBasis = holdings[key].costBasis.sub(
+        avgCost.mul(sellQty)
+      );
     }
   }
 
-  const symbols = Object.keys(holdings);
+  // เอาเฉพาะสินทรัพย์ที่ยังถืออยู่จริง
+  const activeHoldings = Object.values(holdings).filter((h) =>
+    h.quantity.gt(0)
+  );
+
+  if (!activeHoldings.length) {
+    return NextResponse.json({
+      summary: { totalValue: 0, totalCost: 0, gainLossPercent: 0 },
+      categories: [],
+      allocation: [],
+      holdingList: [],
+    });
+  }
+
+  // ดึงราคาปัจจุบันจาก Yahoo Finance
   try {
     const prices = await Promise.all(
-      symbols.map(async (s) => {
+      activeHoldings.map(async (h) => {
         try {
-          const quote = await yahooFinance.quoteSummary(s, {
+          const quote = await yahooFinance.quoteSummary(h.symbol, {
             modules: ["price"],
           });
           const price = quote?.price?.regularMarketPrice ?? 0;
-          return { symbol: s, price: new Decimal(price) };
+          return { symbol: h.symbol, price: new Decimal(price) };
         } catch {
-          console.warn(`Yahoo price fetch failed for ${s}`);
-          return { symbol: s, price: new Decimal(0) };
+          console.warn(`Yahoo price fetch failed for ${h.symbol}`);
+          return { symbol: h.symbol, price: new Decimal(0) };
         }
       })
     );
 
     const priceMap = Object.fromEntries(prices.map((p) => [p.symbol, p.price]));
 
-    for (const s of symbols) {
-      const h = holdings[s];
-      const price = priceMap[s] ?? new Decimal(0);
-
+    for (const h of activeHoldings) {
+      const price = priceMap[h.symbol] ?? new Decimal(0);
       h.currentPrice = price;
       h.currentValue = h.quantity.mul(price);
-
       h.gainPercent = h.costBasis.gt(0)
         ? h.currentValue.sub(h.costBasis).div(h.costBasis).mul(100)
         : new Decimal(0);
@@ -96,21 +119,22 @@ export async function GET() {
     console.error("Yahoo Finance error:", err);
   }
 
-  const totalValue = Object.values(holdings).reduce(
+  // คำนวณ summary เฉพาะสินทรัพย์ที่เหลืออยู่
+  const totalValue = activeHoldings.reduce(
     (sum, h) => sum.add(h.currentValue),
     new Decimal(0)
   );
-  const totalCost = Object.values(holdings).reduce(
+  const totalCost = activeHoldings.reduce(
     (sum, h) => sum.add(h.costBasis),
     new Decimal(0)
   );
-
   const gainLossPercent = totalCost.gt(0)
     ? totalValue.sub(totalCost).div(totalCost).mul(100)
     : new Decimal(0);
 
+  // Category summary
   const categoryMap: Record<string, { value: Decimal; cost: Decimal }> = {};
-  for (const h of Object.values(holdings)) {
+  for (const h of activeHoldings) {
     if (!categoryMap[h.category])
       categoryMap[h.category] = { value: new Decimal(0), cost: new Decimal(0) };
     categoryMap[h.category].value = categoryMap[h.category].value.add(
@@ -129,6 +153,7 @@ export async function GET() {
       : 0,
   }));
 
+  // Allocation
   const allocation = categories.map((c) => ({
     name: c.name,
     value: totalValue.gt(0)
@@ -136,16 +161,21 @@ export async function GET() {
       : 0,
   }));
 
-  const holdingList = Object.values(holdings).map((h) => ({
+  // Holding list
+  const holdingList = activeHoldings.map((h) => ({
     symbol: h.symbol,
     category: h.category,
     quantity: h.quantity.toNumber(),
-    avgCost: h.costBasis.gt(0) ? h.costBasis.div(h.quantity).toNumber() : 0,
+    avgCost:
+      h.quantity.gt(0) && h.costBasis.gt(0)
+        ? h.costBasis.div(h.quantity).toNumber()
+        : 0,
     currentPrice: h.currentPrice.toNumber(),
     currentValue: h.currentValue.toNumber(),
     gainPercent: h.gainPercent.toNumber(),
   }));
 
+  // ส่งออกเฉพาะสินทรัพย์ที่ยังถืออยู่
   return NextResponse.json({
     summary: {
       totalValue: totalValue.toNumber(),
