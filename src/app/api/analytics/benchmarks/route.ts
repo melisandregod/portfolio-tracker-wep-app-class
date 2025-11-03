@@ -192,7 +192,7 @@ export async function GET(req: Request) {
   const cutoff = new Date(end);
   switch (range) {
     case "day":
-      cutoff.setDate(end.getDate() - 1);
+      cutoff.setDate(end.getDate() - 3);
       break;
     case "week":
       cutoff.setDate(end.getDate() - 7);
